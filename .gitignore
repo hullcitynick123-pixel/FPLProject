@@ -1,0 +1,18 @@
+# Environment & Secrets
+.env
+*.env
+
+# Virtual Envs & Python Cache
+.venv/
+FPL_APP/
+__pycache__/
+*.pyc
+
+# Data Caches
+*.csv
+*.json
+data/
+
+# OS & IDE
+.vscode/
+.DS_Store
