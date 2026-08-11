@@ -10,56 +10,38 @@ def inject_ceefax_styles() -> None:
         <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-        /* Global Teletext Canvas */
-        html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
+        /* 1. FORCE ABSOLUTE BLACK BACKGROUND EVERYWHERE (KILL WHITE BLEED) */
+        html, body, #root, .stApp, 
+        [data-testid="stAppViewContainer"], 
+        [data-testid="stHeader"], header {
             background-color: #000000 !important;
-            overflow: hidden !important;
-        }
-
-        body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], .stApp, .main, .block-container {
-            background-color: #000000 !important;
-            color: #FFFFFF !important;
-            font-family: 'VT323', monospace !important;
             margin: 0 !important;
             padding: 0 !important;
-            min-height: 100vh !important;
         }
 
-        .stApp {
-            background: #000000 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100vw !important;
-            max-width: 100vw !important;
-        }
-
-        [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], header {
-            background: #000000 !important;
+        /* 2. COMPLETELY REMOVE STREAMLIT TOP HEADER & DECORATION BARS */
+        header, 
+        [data-testid="stHeader"], 
+        [data-testid="stDecoration"], 
+        [data-testid="stToolbar"], 
+        .stAppHeader {
             display: none !important;
-            height: 0 !important;
-            min-height: 0 !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            border: none !important;
+            height: 0px !important;
+            min-height: 0px !important;
+            visibility: hidden !important;
         }
 
-        [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"] {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
+        /* 3. PULL MAIN CONTAINER FLUSH TO TOP EDGE */
+        .main, 
+        .main .block-container, 
+        [data-testid="stAppViewBlockContainer"],
+        section.main {
+            padding-top: 0px !important;
+            margin-top: 0px !important;
+            top: 0px !important;
         }
 
-        .block-container {
-            padding-top: 0 !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
-            max-width: 100% !important;
-        }
-
-        /* Override Streamlit Typography Everywhere */
+        /* 4. OVERRIDE TYPOGRAPHY */
         h1, h2, h3, h4, h5, h6, p, span, div, label, button, input {
             font-family: 'VT323', monospace !important;
             letter-spacing: 1.5px !important;
