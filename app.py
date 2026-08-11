@@ -16,7 +16,8 @@ st.set_page_config(
     page_icon="📺",
     layout="wide"
 )
-#
+
+# --- Inject Ceefax Styles ---
 inject_ceefax_styles()
 
 # --- Cached Data Fetching ---
