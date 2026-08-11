@@ -17,7 +17,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- Injecting Ceefax Styles ---
+# --- Inject Ceefax Styles ---
 inject_ceefax_styles()
 
 # --- Cached Data Fetching ---
