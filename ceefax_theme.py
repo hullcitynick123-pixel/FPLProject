@@ -26,9 +26,14 @@ def inject_ceefax_styles() -> None:
             padding: 0 !important;
         }
 
-        [data-testid="stHeader"] {
+        [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], header {
             background: #000000 !important;
             display: none !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
         }
 
         [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"] {
