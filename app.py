@@ -7,7 +7,8 @@ import plotly.express as px
 import config
 from api_client import APIFootballClient
 from data_processor import parse_player_raw_data, calculate_per_90_metrics
-from ceefax_theme import inject_ceefax_styles, render_ceefax_header
+from ceefax_theme import inject_ceefax_styles
+from ceefax_header import render_ceefax_header
 
 
 # --- Page Configuration ---
