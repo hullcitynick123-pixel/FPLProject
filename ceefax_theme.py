@@ -11,19 +11,30 @@ def inject_ceefax_styles() -> None:
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         /* Global Teletext Canvas */
-        html, body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], .stApp, .main, .block-container {
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: #000000 !important;
+            overflow: hidden !important;
+        }
+
+        body, [data-testid="stAppViewContainer"], [data-testid="stSidebar"], .stApp, .main, .block-container {
             background-color: #000000 !important;
             color: #FFFFFF !important;
             font-family: 'VT323', monospace !important;
             margin: 0 !important;
             padding: 0 !important;
+            min-height: 100vh !important;
         }
 
-        /* Remove the white margin gap at the very top of the page */
         .stApp {
             background: #000000 !important;
             margin: 0 !important;
             padding: 0 !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
         }
 
         [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], header {
@@ -39,6 +50,13 @@ def inject_ceefax_styles() -> None:
         [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlock"] {
             margin-top: 0 !important;
             padding-top: 0 !important;
+        }
+
+        .block-container {
+            padding-top: 0 !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+            max-width: 100% !important;
         }
 
         /* Override Streamlit Typography Everywhere */
