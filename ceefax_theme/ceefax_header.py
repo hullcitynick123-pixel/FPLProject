@@ -4,7 +4,7 @@ import datetime
 
 import streamlit.components.v1 as components
 
-from ceefax_clock import get_clock_script
+from ceefax_theme.ceefax_clock import get_clock_script
 from get_fpl_data import get_time_until_next_gameweek
 
 

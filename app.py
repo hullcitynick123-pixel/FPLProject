@@ -2,14 +2,11 @@
 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-from datetime import datetime, timedelta
-
 import config
 from api_client import APIFootballClient
 from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers
-from ceefax_theme import inject_ceefax_styles
-from ceefax_header import render_ceefax_header
+from ceefax_theme.ceefax_theme import inject_ceefax_styles
+from ceefax_theme.ceefax_header import render_ceefax_header
 
 
 # --- Page Configuration ---
@@ -21,6 +18,20 @@ st.set_page_config(
 
 sheet_id = config.SHEET_ID
 tab_name = config.SHEET_NAME
+
+# --- Manager to Team Name Mapping ---
+MANAGER_TEAMS = {
+    "Kirkman": "Squad",
+    "Seargent": "Iraola Coaster",
+    "Atkinson": "Kibosh FC",
+    "Milner": "Milner's Maulers",
+    "Conor": "Conor's Team",
+    "Trapps": "Just Gimme de Ligt",
+    "Robinson": "Sean's Long Staff",
+    "Shaw": "Farke the Bus",
+    "Browes": "Always Showtime",
+    "Ryder": "Bad To The Bum",
+}
 
 # --- Inject Ceefax Styles ---
 inject_ceefax_styles()
@@ -167,7 +178,7 @@ def render_transfer_feed() -> None:
 
 def render_fantasy_squad_page() -> None:
     """Render the Fantasy Squads page with manager selections."""
-    st.markdown("<h2 style='color:#00FF00; margin-top:20px;'>FANTASY SQUADS</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>FANTASY SQUADS</h2>", unsafe_allow_html=True)
 
     try:
         squads_df = fetch_draft_squads(sheet_id=sheet_id, tab_name=tab_name)
@@ -186,7 +197,8 @@ def render_fantasy_squad_page() -> None:
         
         for col_idx, manager_name in enumerate(managers[i:i+5]):
             with cols[col_idx]:
-                st.markdown(f"<h4 style='color:#FFFF00; margin:0; padding:0;'>{manager_name}</h4>", unsafe_allow_html=True)
+                # Get team name for this manager
+                team_name = MANAGER_TEAMS.get(manager_name, manager_name)
 
                 # Get the manager's squad by position
                 squad_dict = get_manager_squad_by_position(squads_df, manager_name)
@@ -234,7 +246,18 @@ def render_fantasy_squad_page() -> None:
                         },
                     ])
                 )
-                st.write(styled_table.to_html(), unsafe_allow_html=True)
+                
+                # Combine header and table in a single container
+                header_html = (
+                    f"<div style='text-align:center; width:100%;'>"
+                    f"<h3 style='color:#FFFF00; margin:0 0 4px 0; padding:0;'>{team_name}</h3>"
+                    f"<p style='color:#00FFFF; margin:0 0 8px 0; padding:0; font-size:11px;'>(Manager: {manager_name})</p>"
+                    f"</div>"
+                )
+                table_html = styled_table.to_html()
+                
+                combined_html = f"<div style='display:flex; flex-direction:column; align-items:center;'>{header_html}{table_html}</div>"
+                st.markdown(combined_html, unsafe_allow_html=True)
 
 def render_league_table() -> None:
     """Render the current Premier League standings table."""
