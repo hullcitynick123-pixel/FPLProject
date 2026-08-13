@@ -16,3 +16,4 @@ data/
 # OS & IDE
 .vscode/
 .DS_Store
+.streamlit/secrets.toml

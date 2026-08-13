@@ -3,13 +3,13 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from datetime import datetime, timedelta
 
 import config
 from api_client import APIFootballClient
-from data_processor import parse_player_raw_data, calculate_per_90_metrics
+from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers
 from ceefax_theme import inject_ceefax_styles
 from ceefax_header import render_ceefax_header
-from player_search import render_player_search_page
 
 
 # --- Page Configuration ---
@@ -19,23 +19,11 @@ st.set_page_config(
     layout="wide"
 )
 
+sheet_id = config.SHEET_ID
+tab_name = config.SHEET_NAME
+
 # --- Inject Ceefax Styles ---
 inject_ceefax_styles()
-
-# --- Cached Data Fetching ---
-@st.cache_data(ttl=3600, show_spinner=False)
-def get_player_data(season: int) -> pd.DataFrame:
-    """Fetch raw API data, parse, and engineer metrics with 1-hour cache."""
-    client = APIFootballClient()
-    raw_response = client.fetch_top_scorers(season=season)
-    raw_df = parse_player_raw_data(raw_response)
-    if raw_df.empty:
-        return pd.DataFrame()
-    
-    # Process base metrics with minimum 1 minute played
-    processed_df = calculate_per_90_metrics(raw_df, min_minutes=1)
-    return processed_df
-
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
@@ -70,7 +58,6 @@ def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
         ]
     )
     return table
-
 
 def teletext_styler(frame: pd.DataFrame):
     """Return a retro Ceefax-style pandas Styler for data tables."""
@@ -115,32 +102,139 @@ def teletext_styler(frame: pd.DataFrame):
         .format({"Team": lambda value: value}, escape="html")
     )
 
+def render_transfer_feed() -> None:
+    """Render a rolling transfer news feed at the top of the page."""
+    try:
+        # Determine current gameweek based on season start date
+        from datetime import datetime, timedelta
+        try:
+            season_start = datetime.strptime(config.SEASON_START_DATE, "%Y-%m-%d")
+        except:
+            season_start = datetime(2026, 8, 21)  # Default fallback
+        
+        current_date = datetime.now()
+        days_since_start = (current_date - season_start).days
+        current_gameweek = max(1, (days_since_start // 7) + 1)  # Gameweek changes weekly
+        
+        transfers = fetch_transfers(sheet_id=sheet_id, tab_name="Transfers", gameweek=current_gameweek)
+    except Exception as e:
+        print(f"Failed to fetch transfers: {e}")
+        transfers = []
+    
+    if not transfers:
+        return
+    
+    # Create transfer text without duplication
+    transfer_text = " • ".join(transfers)
+    
+    # CSS for marquee scrolling effect
+    marquee_html = f"""
+    <style>
+        @keyframes scroll {{
+            0% {{ transform: translateX(100%); }}
+            100% {{ transform: translateX(-100%); }}
+        }}
+        .transfer-marquee {{
+            background-color: #000000;
+            color: #FF00FF;
+            border: 2px solid #FF00FF;
+            padding: 12px 10px;
+            font-family: 'VT323', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-top: 0;
+            margin-bottom: 8px;
+        }}
+        .transfer-scroll {{
+            display: inline-block;
+            animation: scroll 45s linear infinite;
+            padding-right: 50px;
+        }}
+        .transfer-scroll:hover {{
+            animation-play-state: paused;
+        }}
+    </style>
+    <div class="transfer-marquee">
+        <span class="transfer-scroll">{transfer_text}</span>
+        <span class="transfer-scroll">{transfer_text}</span>
+    </div>
+    """
+    
+    st.markdown(marquee_html, unsafe_allow_html=True)
 
-def render_home_page() -> None:
-    """Render the default analytics home view."""
-    client = APIFootballClient()
-    raw_data = client.fetch_top_scorers(season=config.DEFAULT_SEASON)
-    raw_df = parse_player_raw_data(raw_data)
-    df = calculate_per_90_metrics(raw_df, min_minutes=90)
+def render_fantasy_squad_page() -> None:
+    """Render the Fantasy Squads page with manager selections."""
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px;'>FANTASY SQUADS</h2>", unsafe_allow_html=True)
 
-    if not df.empty:
-        col1, col2, col3 = st.columns(3)
-        top_scorer = df.sort_values(by="Goals", ascending=False).iloc[0]
-        top_xg = df.sort_values(by="xG_Per_90", ascending=False).iloc[0]
+    try:
+        squads_df = fetch_draft_squads(sheet_id=sheet_id, tab_name=tab_name)
+    except Exception as e:
+        st.error(f"Failed to fetch fantasy squads: {e}")
+        return
 
-        col1.metric("LEADING SCORER", top_scorer["Player"], f"{top_scorer['Goals']} GOALS")
-        col2.metric("HIGHEST xG/90", top_xg["Player"], f"{top_xg['xG_Per_90']}")
-        col3.metric("TOTAL PLAYERS", len(df))
+    if squads_df.empty:
+        st.warning("No squad data available.")
+        return
 
-        st.markdown("<h2 style='color:#00FF00; margin-top:20px;'>PLAYER PERFORMANCE MATRIX</h2>", unsafe_allow_html=True)
-        st.dataframe(
-            teletext_styler(
-                df[["Player", "Team", "Position", "Minutes", "Goals", "Goals_Per_90", "xG_Per_90", "Tackles_Per_90"]]
-            ),
-            use_container_width=True,
-            hide_index=True,
-        )
+    # Display squads in 5-column layout (2 rows of 5)
+    managers = list(squads_df.columns)
+    for i in range(0, len(managers), 5):
+        cols = st.columns(5)
+        
+        for col_idx, manager_name in enumerate(managers[i:i+5]):
+            with cols[col_idx]:
+                st.markdown(f"<h4 style='color:#FFFF00; margin:0; padding:0;'>{manager_name}</h4>", unsafe_allow_html=True)
 
+                # Get the manager's squad by position
+                squad_dict = get_manager_squad_by_position(squads_df, manager_name)
+                if not squad_dict:
+                    st.info(f"No squad data for {manager_name}.")
+                    continue
+
+                # Convert dict to DataFrame for styling
+                squad_data = []
+                for position, players in squad_dict.items():
+                    for player in players:
+                        squad_data.append({"Position": position, "Player": player})
+                squad_df = pd.DataFrame(squad_data)
+
+                # Display the squad in a styled table with compact sizing
+                styled_table = (
+                    squad_df.style.set_properties(**{
+                        "background-color": "#000000",
+                        "color": "#00FF00",
+                        "border": "1px solid #00FF00",
+                        "font-family": "'VT323', monospace",
+                        "font-size": "20px",
+                        "padding": "3px 4px",
+                        "text-align": "center",
+                    })
+                    .set_table_styles([
+                        {
+                            "selector": "th",
+                            "props": [
+                                ("background-color", "#0000FF"),
+                                ("color", "#FFFFFF"),
+                                ("border", "1px solid #00FF00"),
+                                ("font-weight", "bold"),
+                                ("padding", "3px 4px"),
+                                ("font-size", "15px"),
+                            ],
+                        },
+                        {
+                            "selector": "td",
+                            "props": [
+                                ("border", "1px solid #00FF00"),
+                                ("padding", "3px 3px"),
+                                ("font-size", "20px"),  
+                            ],
+                        },
+                    ])
+                )
+                st.write(styled_table.to_html(), unsafe_allow_html=True)
 
 def render_league_table() -> None:
     """Render the current Premier League standings table."""
@@ -224,10 +318,12 @@ def render_league_table() -> None:
     """
     st.markdown(table_html, unsafe_allow_html=True)
 
-
 def main() -> None:
     if "active_page" not in st.session_state:
         st.session_state.active_page = "home"
+
+    # Render transfer feed
+    render_transfer_feed()
 
     render_ceefax_header(page_num=302, title="FPL ANALYTICS")
 
@@ -269,18 +365,14 @@ def main() -> None:
         st.session_state.active_page = "fixtures"
     if btn_col3.button("305 PLAYER INDEX", use_container_width=True, key="players_tab"):
         st.session_state.active_page = "players"
-    if btn_col4.button("306 FANTASY STATS", use_container_width=True, key="stats_tab"):
-        st.session_state.active_page = "stats"
+    if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
+        st.session_state.active_page = "squads"
     st.markdown("---")
 
     if st.session_state.active_page == "league":
         render_league_table()
-    elif st.session_state.active_page == "players":
-        player_df = get_player_data(config.DEFAULT_SEASON)
-        render_player_search_page(player_df)
-    else:
-        render_home_page()
-
+    elif st.session_state.active_page == "squads":
+        render_fantasy_squad_page()
 
 if __name__ == "__main__":
     main()
