@@ -58,15 +58,13 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
                     width: 100%;
                 }}
                 
-                /* Classic BBC White Block Logo */
-                .bbc-cubes-wrapper {{
+                .opx-cubes-wrapper {{
                     display: flex;
                     gap: 6px; /* Space between the 3 cubes */
                     margin-right: 12px; /* Space between cubes and title */
                 }}
 
-                /* Individual BBC Cube Styling */
-                .bbc-cube {{
+                .opx-cube {{
                     background-color: #FFFFFF;
                     color: #000000;
                     font-family: 'VT323', monospace;
@@ -104,7 +102,6 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
         </head>
         <body>
             <div class="ceefax-header">
-                <!-- Top Header Row -->
                 <div class="ceefax-top-row">
                     <span class="ceefax-brand">CEEFAX 1 <span class="ceefax-page-num">{page_num}</span></span>
                     <div class="ceefax-meta">
@@ -112,13 +109,11 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
                         <div class="ceefax-time" id="ceefax-time">{get_current_date()}</div>
                     </div>
                 </div>
-
-                <!-- Classic BBC Title Banner -->
                 <div class="ceefax-banner">
-                    <div class="bbc-cubes-wrapper">
-                        <div class="bbc-cube">B</div>
-                        <div class="bbc-cube">B</div>
-                        <div class="bbc-cube">C</div>
+                    <div class="opx-cubes-wrapper">
+                        <div class="opx-cube">O</div>
+                        <div class="opx-cube">P</div>
+                        <div class="opx-cube">X</div>
                     </div>
                     <div class="ceefax-title">{title}</div>
                 </div>
