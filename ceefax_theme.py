@@ -112,6 +112,29 @@ def inject_ceefax_styles() -> None:
         [data-testid="stDataFrame"] {
             border: 2px solid #FFFF00 !important;
         }
+        div[data-baseweb="input"] > div, 
+        div[data-baseweb="select"] > div {
+            background-color: #000000 !important;
+            border: 2px solid #00FF00 !important;
+            color: #00FF00 !important;
+            border-radius: 0px !important;
+        }
+
+        input {
+            color: #FFFF00 !important;
+            background-color: #000000 !important;
+        }
+
+        div[data-baseweb="popover"] {
+            background-color: #000000 !important;
+            border: 2px solid #00FFFF !important;
+        }
+
+        li[role="option"] {
+            background-color: #000000 !important;
+            color: #FFFF00 !important;
+            font-family: 'VT323', monospace !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,

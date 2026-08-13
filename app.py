@@ -9,6 +9,7 @@ from api_client import APIFootballClient
 from data_processor import parse_player_raw_data, calculate_per_90_metrics
 from ceefax_theme import inject_ceefax_styles
 from ceefax_header import render_ceefax_header
+from player_search import render_player_search_page
 
 
 # --- Page Configuration ---
@@ -266,7 +267,7 @@ def main() -> None:
         st.session_state.active_page = "league"
     if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
         st.session_state.active_page = "fixtures"
-    if btn_col3.button("305 PLAYER METRICS", use_container_width=True, key="players_tab"):
+    if btn_col3.button("305 PLAYER INDEX", use_container_width=True, key="players_tab"):
         st.session_state.active_page = "players"
     if btn_col4.button("306 FANTASY STATS", use_container_width=True, key="stats_tab"):
         st.session_state.active_page = "stats"
@@ -274,6 +275,9 @@ def main() -> None:
 
     if st.session_state.active_page == "league":
         render_league_table()
+    elif st.session_state.active_page == "players":
+        player_df = get_player_data(config.DEFAULT_SEASON)
+        render_player_search_page(player_df)
     else:
         render_home_page()
 
