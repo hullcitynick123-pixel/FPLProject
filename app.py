@@ -3,8 +3,8 @@
 import streamlit as st
 import pandas as pd
 import config
-from api_client import APIFootballClient
-from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers
+from fpl_constants import MANAGER_TEAMS
+from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers, get_league_table
 from ceefax_theme.ceefax_theme import inject_ceefax_styles
 from ceefax_theme.ceefax_header import render_ceefax_header
 
@@ -19,99 +19,8 @@ st.set_page_config(
 sheet_id = config.SHEET_ID
 tab_name = config.SHEET_NAME
 
-# --- Manager to Team Name Mapping ---
-MANAGER_TEAMS = {
-    "Kirkman": "Squad",
-    "Seargent": "Iraola Coaster",
-    "Atkinson": "Kibosh FC",
-    "Milner": "Milner's Maulers",
-    "Conor": "Conor's Team",
-    "Trapps": "Just Gimme de Ligt",
-    "Robinson": "Sean's Long Staff",
-    "Shaw": "Farke the Bus",
-    "Browes": "Always Showtime",
-    "Ryder": "Bad To The Bum",
-}
-
 # --- Inject Ceefax Styles ---
 inject_ceefax_styles()
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
-    """Fetch and flatten the current Premier League standings."""
-    client = APIFootballClient()
-    response = client.fetch_standings(season=season)
-    standings = response.get("response", [])
-    if not standings:
-        return pd.DataFrame()
-
-    rows = standings[0].get("league", {}).get("standings", [[]])[0]
-    if not rows:
-        return pd.DataFrame()
-
-    table = pd.DataFrame(
-        [
-            {
-                "Rank": row.get("rank"),
-                "Team": row.get("team", {}).get("name", ""),
-                "Team_Logo": row.get("team", {}).get("logo"),
-                "Played": row.get("all", {}).get("played"),
-                "Won": row.get("all", {}).get("win"),
-                "Drawn": row.get("all", {}).get("draw"),
-                "Lost": row.get("all", {}).get("lose"),
-                "GF": row.get("all", {}).get("goals", {}).get("for"),
-                "GA": row.get("all", {}).get("goals", {}).get("against"),
-                "GD": row.get("goalsDiff"),
-                "Points": row.get("points"),
-                "Form": row.get("form"),
-            }
-            for row in rows
-        ]
-    )
-    return table
-
-def teletext_styler(frame: pd.DataFrame):
-    """Return a retro Ceefax-style pandas Styler for data tables."""
-    return (
-        frame.style.set_properties(**{
-            "background-color": "#000000",
-            "color": "#00FF00",
-            "border": "1px solid #00FF00",
-            "font-family": "'VT323', monospace",
-            "font-size": "18px",
-            "padding": "6px 10px",
-            "text-align": "center",
-        })
-        .set_table_styles([
-            {
-                "selector": "th",
-                "props": [
-                    ("background-color", "#0000FF"),
-                    ("color", "#FFFFFF"),
-                    ("border", "1px solid #00FF00"),
-                    ("font-weight", "bold"),
-                    ("padding", "8px 10px"),
-                    ("text-transform", "uppercase"),
-                ],
-            },
-            {
-                "selector": "td",
-                "props": [
-                    ("border", "1px solid #00FF00"),
-                    ("padding", "6px 10px"),
-                ],
-            },
-            {
-                "selector": "tbody tr:hover",
-                "props": [("background-color", "#001100"), ("color", "#FFFF00")],
-            },
-            {
-                "selector": "img",
-                "props": [("width", "20px"), ("height", "20px"), ("display", "block")],
-            },
-        ])
-        .format({"Team": lambda value: value}, escape="html")
-    )
 
 def render_transfer_feed() -> None:
     """Render a rolling transfer news feed at the top of the page."""
@@ -348,9 +257,8 @@ def main() -> None:
     # Render transfer feed
     render_transfer_feed()
 
-    render_ceefax_header(page_num=302, title="OPTIX FPL STATS")
+    render_ceefax_header(page_num=302, title="FOOTBALL")
 
-    st.markdown("<h1 style='color:#FFFF00; text-align:center;'>CEEFAX FANTASY PREMIER LEAGUE</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#00FFFF; text-align:center;'>FANTASY FOOTBALL STATISTICAL INDEX 2026/27</p>", unsafe_allow_html=True)
 
     st.markdown(
@@ -379,7 +287,7 @@ def main() -> None:
         """,
         unsafe_allow_html=True,
     )
-    st.markdown("---")
+
     btn_col1, btn_col2, btn_col3, btn_col4 = st.columns(4)
 
     if btn_col1.button("303 LEAGUE TABLE", use_container_width=True, key="league_tab"):
@@ -390,7 +298,6 @@ def main() -> None:
         st.session_state.active_page = "players"
     if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
         st.session_state.active_page = "squads"
-    st.markdown("---")
 
     if st.session_state.active_page == "league":
         render_league_table()

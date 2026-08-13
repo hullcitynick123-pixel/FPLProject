@@ -3,6 +3,8 @@
 import urllib.parse
 import pandas as pd
 import streamlit as st
+from api_client import APIFootballClient
+import config
 
 @st.cache_data(ttl=300)
 def fetch_draft_squads(sheet_id: str, tab_name: str = "current_squad") -> pd.DataFrame:
@@ -49,6 +51,7 @@ def get_manager_squad_by_position(squads_df: pd.DataFrame, manager_name: str) ->
 
 @st.cache_data(ttl=100)
 def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int = None) -> list:
+
     """Fetch transfer news from the Transfers sheet for a specific gameweek.
     
     Args:
@@ -112,3 +115,37 @@ def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int = 
     except Exception as exc:
         print(f"❌ Failed to fetch transfers: {exc}")
         return []
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
+    """Fetch and flatten the current Premier League standings."""
+    client = APIFootballClient()
+    response = client.fetch_standings(season=season)
+    standings = response.get("response", [])
+    if not standings:
+        return pd.DataFrame()
+
+    rows = standings[0].get("league", {}).get("standings", [[]])[0]
+    if not rows:
+        return pd.DataFrame()
+
+    table = pd.DataFrame(
+        [
+            {
+                "Rank": row.get("rank"),
+                "Team": row.get("team", {}).get("name", ""),
+                "Team_Logo": row.get("team", {}).get("logo"),
+                "Played": row.get("all", {}).get("played"),
+                "Won": row.get("all", {}).get("win"),
+                "Drawn": row.get("all", {}).get("draw"),
+                "Lost": row.get("all", {}).get("lose"),
+                "GF": row.get("all", {}).get("goals", {}).get("for"),
+                "GA": row.get("all", {}).get("goals", {}).get("against"),
+                "GD": row.get("goalsDiff"),
+                "Points": row.get("points"),
+                "Form": row.get("form"),
+            }
+            for row in rows
+        ]
+    )
+    return table
