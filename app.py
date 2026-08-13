@@ -2,6 +2,7 @@
 
 import streamlit as st
 import pandas as pd
+from api_client import APIFootballClient
 import config
 from fpl_constants import MANAGER_TEAMS
 from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers, get_league_table
@@ -78,7 +79,6 @@ def render_transfer_feed() -> None:
         }}
     </style>
     <div class="transfer-marquee">
-        <span class="transfer-scroll">{transfer_text}</span>
         <span class="transfer-scroll">{transfer_text}</span>
     </div>
     """
@@ -294,7 +294,7 @@ def main() -> None:
         st.session_state.active_page = "league"
     if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
         st.session_state.active_page = "fixtures"
-    if btn_col3.button("305 PLAYER INDEX", use_container_width=True, key="players_tab"):
+    if btn_col3.button("305 PLAYER SEARCH", use_container_width=True, key="players_tab"):
         st.session_state.active_page = "players"
     if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
         st.session_state.active_page = "squads"
@@ -303,6 +303,18 @@ def main() -> None:
         render_league_table()
     elif st.session_state.active_page == "squads":
         render_fantasy_squad_page()
-
+    elif st.session_state.active_page == "players":
+        st.info("Player Search functionality is under development.")
+        st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>PLAYER SEARCH</h2>", unsafe_allow_html=True)
+        player_search = st.text_input("Enter player name to search:", "")
+        api = APIFootballClient()
+        if player_search:
+            try:
+                player_response = api.fetch_player(player_search)
+                st.json(player_response)
+            except Exception as e:
+                st.error(f"Failed to fetch player data: {e}")
+            player_response = api.fetch_player(player_search, league=config.DEFAULT_LEAGUE_ID, season=2025)
+            st.json(player_response)
 if __name__ == "__main__":
     main()

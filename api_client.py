@@ -36,3 +36,22 @@ class APIFootballClient:
         except requests.exceptions.RequestException as exc:
             print(f"❌ Network Request Failed: {exc}")
             raise
+
+    def fetch_player(self, player_name: str, league: int = config.DEFAULT_LEAGUE_ID, season: int = config.DEFAULT_SEASON) -> Dict[str, Any]:
+        """Fetch player details from API-Football."""
+        url = f"{config.BASE_URL}/players"
+        params = {"search": player_name, "league": league, "season": season}
+
+        try:
+            response = requests.get(url, headers=self.headers, params=params, timeout=10)
+            response.raise_for_status()
+            data: Dict[str, Any] = response.json()
+
+            errors = data.get("errors")
+            if errors and len(errors) > 0:
+                print(f"⚠️ API Notice: {errors}")
+
+            return data
+        except requests.exceptions.RequestException as exc:
+            print(f"❌ Network Request Failed: {exc}")
+            raise
