@@ -325,7 +325,7 @@ def main() -> None:
     # Render transfer feed
     render_transfer_feed()
 
-    render_ceefax_header(page_num=302, title="FPL ANALYTICS")
+    render_ceefax_header(page_num=302, title="OPTIX FPL STATS")
 
     st.markdown("<h1 style='color:#FFFF00; text-align:center;'>CEEFAX FANTASY PREMIER LEAGUE</h1>", unsafe_allow_html=True)
     st.markdown("<p style='color:#00FFFF; text-align:center;'>FANTASY FOOTBALL STATISTICAL INDEX 2026/27</p>", unsafe_allow_html=True)

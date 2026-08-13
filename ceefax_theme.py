@@ -42,6 +42,26 @@ def inject_ceefax_styles() -> None:
             margin-top: 0px !important;
             top: 0px !important;
         }
+        
+        /* 3b. REMOVE PADDING FROM MAIN BLOCK CONTAINER */
+        .stMainBlockContainer {
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+            margin-top: 0px !important;
+        }
+        
+        /* 3c. REMOVE ALL TOP PADDING FROM NESTED BLOCKS */
+        [data-testid="stVerticalBlock"] > * > [data-testid="stVerticalBlock"]:first-child {
+            margin-top: 0px !important;
+            padding-top: 0px !important;
+        }
+        
+        .stMarkdown:first-of-type,
+        .stMarkdown:first-of-type > div,
+        [data-testid="stVerticalBlock"]:first-child {
+            margin-top: 0px !important;
+            padding-top: 0px !important;
+        }
 
         /* 4. OVERRIDE TYPOGRAPHY */
         h1, h2, h3, h4, h5, h6, p, span, div, label, button, input {
