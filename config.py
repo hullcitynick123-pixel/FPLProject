@@ -35,4 +35,6 @@ DEFAULT_SEASON: int = int(get_secret("DEFAULT_SEASON", "2025"))
 
 # Work Sheet Details
 SHEET_ID: str = get_secret("WORK_SHEET_ID", "")
-SHEET_NAME: str = get_secret("WORK_SHEET_SQUADS", "Current Squads")
+SQUAD_SHEET_NAME: str = get_secret("WORK_SHEET_SQUADS", "Current Squads")
+TRANSFERS_SHEET_NAME: str = get_secret("WORK_SHEET_TRANSFERS", "Transfers")
+SCORECARD_SHEET_NAME: str = get_secret("WORK_SHEET_TABLE", "Scorecard")

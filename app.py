@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 sheet_id = config.SHEET_ID
-tab_name = config.SHEET_NAME
+tab_name = config.SQUAD_SHEET_NAME
 
 # --- Inject Ceefax Styles ---
 inject_ceefax_styles()
@@ -29,7 +29,7 @@ def render_transfer_feed() -> None:
     """Render a rolling transfer news feed at the top of the page."""
     try:
         current_gameweek = get_current_gameweek()
-        transfers = fetch_transfers(sheet_id=sheet_id, tab_name="Transfers", gameweek=current_gameweek["id"])
+        transfers = fetch_transfers(sheet_id=sheet_id, tab_name=config.TRANSFERS_SHEET_NAME, gameweek=current_gameweek["id"])
         transfers = build_dynamic_feed(transfers, gameweek_id=current_gameweek.get("id", 0))
     except Exception as e:
         print(f"Failed to fetch transfers: {e}")
@@ -244,6 +244,8 @@ def render_league_table() -> None:
     """
     st.markdown(table_html, unsafe_allow_html=True)
 
+def render_fantasy_league_table() -> None:
+    st.text("Fetching Fantasy League Table...")
 def main() -> None:
     if "active_page" not in st.session_state:
         st.session_state.active_page = "home"
@@ -282,9 +284,9 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    btn_col1, btn_col2, btn_col3, btn_col4 = st.columns(4)
+    btn_col1, btn_col2, btn_col3, btn_col4, btn_col5 = st.columns(5)
 
-    if btn_col1.button("303 LEAGUE TABLE", use_container_width=True, key="league_tab"):
+    if btn_col1.button("303 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
         st.session_state.active_page = "league"
     if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
         st.session_state.active_page = "fixtures"
@@ -292,12 +294,16 @@ def main() -> None:
         st.session_state.active_page = "players"
     if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
         st.session_state.active_page = "squads"
-
+    if btn_col5.button("307 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
+        st.session_state.active_page = "fantasy_league"
     if st.session_state.active_page == "league":
         render_league_table()
     elif st.session_state.active_page == "squads":
         render_fantasy_squad_page()
     elif st.session_state.active_page == "players":
+        return;
+    elif st.session_state.active_page == "fantasy_league":
+        render_fantasy_league_table()
         st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>PLAYER SEARCH</h2>", unsafe_allow_html=True)
         player_search = st.text_input("Enter player name to search:", "")
         api = APIFootballClient()
