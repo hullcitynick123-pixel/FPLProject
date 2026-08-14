@@ -79,7 +79,6 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
                     /* Box shadow around each cube */
                     box-shadow: 3px 3px 0px #000000; 
                     
-                    text-shadow: 0px 3px 0px #000000;
                 }}
 
                 /* Title Section (Green Text on Blue Background) */

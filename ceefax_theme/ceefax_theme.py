@@ -169,6 +169,35 @@ def inject_ceefax_styles() -> None:
             gap: 10px !important;
         }
 
+        /* Nav buttons: verified via live DOM inspection that st.columns() renders
+           as stHorizontalBlock > stColumn, and that the st-key-* class lands
+           directly on the container's stVerticalBlock. A fixed-column grid on
+           the horizontal block (not flex) guarantees every column/button is
+           exactly the same width regardless of label length. */
+        .st-key-navbuttons div[data-testid="stHorizontalBlock"] {
+            display: grid !important;
+            grid-template-columns: repeat(5, 1fr) !important;
+            gap: 12px !important;
+        }
+        .st-key-navbuttons div[data-testid="stColumn"] {
+            width: 100% !important;
+            min-width: 0 !important;
+            flex: none !important;
+        }
+        /* Streamlit sets an inline pixel width on .stButton based on measured
+           content; force every wrapper between the column and the button to
+           100% so that inline style loses to this !important chain. */
+        .st-key-navbuttons div[data-testid="stVerticalBlockBorderWrapper"],
+        .st-key-navbuttons div[data-testid="stVerticalBlock"],
+        .st-key-navbuttons div[data-testid="stElementContainer"],
+        .st-key-navbuttons .stButton,
+        .st-key-navbuttons .stButton > button {
+            width: 100% !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            white-space: normal !important;
+        }
+
         /* --- Mobile breakpoint --- */
         @media (max-width: 768px) {
             h1 { font-size: 26px !important; }
@@ -185,6 +214,7 @@ def inject_ceefax_styles() -> None:
 
             div[data-testid="stHorizontalBlock"] {
                 gap: 8px !important;
+                flex-direction: column !important;
             }
 
             div[data-testid="stHorizontalBlock"] > div {
@@ -194,20 +224,10 @@ def inject_ceefax_styles() -> None:
                 margin-bottom: 8px !important;
             }
 
-            /* Nav buttons: force a visible gap between the 2-per-row buttons */
-            .st-key-nav-buttons div[data-testid="stHorizontalBlock"] {
+            /* Nav buttons: stack them in a single column with visible spacing */
+            .st-key-navbuttons div[data-testid="stHorizontalBlock"] {
+                grid-template-columns: 1fr !important;
                 gap: 12px !important;
-                row-gap: 12px !important;
-            }
-            .st-key-nav-buttons div[data-testid="stHorizontalBlock"] > div {
-                flex: 1 1 calc(50% - 12px) !important;
-                min-width: calc(50% - 12px) !important;
-            }
-
-            /* Squads grid: one squad table per row on mobile to avoid overlap */
-            .st-key-squads-grid div[data-testid="stHorizontalBlock"] > div {
-                flex: 1 1 100% !important;
-                min-width: 100% !important;
             }
 
             .teletext-table {

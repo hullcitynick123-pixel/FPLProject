@@ -92,75 +92,68 @@ def render_fantasy_squad_page() -> None:
         st.warning("No squad data available.")
         return
 
-    # Display squads in 5-column layout (2 rows of 5)
+    # Build each squad card as raw HTML in a CSS grid so column count is fully
+    # controlled by CSS (not Streamlit's own inline column widths), which lets
+    # the mobile media query reliably collapse it to one card per row.
     managers = list(squads_df.columns)
-    squads_grid = st.container(key="squads-grid")
-    for i in range(0, len(managers), 5):
-        cols = squads_grid.columns(5)
-        
-        for col_idx, manager_name in enumerate(managers[i:i+5]):
-            with cols[col_idx]:
-                # Get team name for this manager
-                team_name = MANAGER_TEAMS.get(manager_name, manager_name)
+    cards_html = []
+    for manager_name in managers:
+        team_name = MANAGER_TEAMS.get(manager_name, manager_name)
 
-                # Get the manager's squad by position
-                squad_dict = get_manager_squad_by_position(squads_df, manager_name)
-                if not squad_dict:
-                    st.info(f"No squad data for {manager_name}.")
-                    continue
+        squad_dict = get_manager_squad_by_position(squads_df, manager_name)
+        if not squad_dict:
+            cards_html.append(
+                f"<div class='squad-card'><p style='color:#00FFFF;'>No squad data for {manager_name}.</p></div>"
+            )
+            continue
 
-                # Convert dict to DataFrame for styling
-                squad_data = []
-                for position, players in squad_dict.items():
-                    for player in players:
-                        squad_data.append({"Position": position, "Player": player})
-                squad_df = pd.DataFrame(squad_data)
+        squad_data = []
+        for position, players in squad_dict.items():
+            for player in players:
+                squad_data.append({"Position": position, "Player": player})
 
-                # Display the squad in a styled table with compact sizing
-                styled_table = (
-                    squad_df.style.set_properties(**{
-                        "background-color": "#000000",
-                        "color": "#00FF00",
-                        "border": "1px solid #00FF00",
-                        "font-family": "'VT323', monospace",
-                        "font-size": "20px",
-                        "padding": "3px 4px",
-                        "text-align": "center",
-                    })
-                    .set_table_styles([
-                        {
-                            "selector": "th",
-                            "props": [
-                                ("background-color", "#0000FF"),
-                                ("color", "#FFFFFF"),
-                                ("border", "1px solid #00FF00"),
-                                ("font-weight", "bold"),
-                                ("padding", "3px 4px"),
-                                ("font-size", "15px"),
-                            ],
-                        },
-                        {
-                            "selector": "td",
-                            "props": [
-                                ("border", "1px solid #00FF00"),
-                                ("padding", "3px 3px"),
-                                ("font-size", "20px"),  
-                            ],
-                        },
-                    ])
-                )
-                
-                # Combine header and table in a single container
-                header_html = (
-                    f"<div style='text-align:center; width:100%;'>"
-                    f"<h3 style='color:#FFFF00; margin:0 0 4px 0; padding:0;'>{team_name}</h3>"
-                    f"<p style='color:#00FFFF; margin:0 0 8px 0; padding:0; font-size:11px;'>(Manager: {manager_name})</p>"
-                    f"</div>"
-                )
-                table_html = styled_table.to_html()
-                
-                combined_html = f"<div style='display:flex; flex-direction:column; align-items:center;'>{header_html}{table_html}</div>"
-                st.markdown(combined_html, unsafe_allow_html=True)
+        rows_html = "".join(
+            f"<tr><td>{item['Position']}</td><td>{item['Player']}</td></tr>" for item in squad_data
+        )
+        table_html = (
+            "<table class='squad-table'>"
+            "<thead><tr><th>Position</th><th>Player</th></tr></thead>"
+            f"<tbody>{rows_html}</tbody>"
+            "</table>"
+        )
+
+        header_html = (
+            f"<div style='text-align:center; width:100%;'>"
+            f"<h3 style='color:#FFFF00; margin:0 0 4px 0; padding:0;'>{team_name}</h3>"
+            f"<p style='color:#00FFFF; margin:0 0 8px 0; padding:0; font-size:11px;'>(Manager: {manager_name})</p>"
+            f"</div>"
+        )
+
+        cards_html.append(f"<div class='squad-card'>{header_html}{table_html}</div>")
+
+    grid_html = f"""
+    <style>
+        .squad-grid {{
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }}
+        .squad-card {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+            overflow-x: auto;
+        }}
+        @media (max-width: 768px) {{
+            .squad-grid {{
+                grid-template-columns: 1fr;
+            }}
+        }}
+    </style>
+    <div class="squad-grid">{''.join(cards_html)}</div>
+    """
+    st.markdown(grid_html, unsafe_allow_html=True)
 
 def render_league_table() -> None:
     """Render the current Premier League standings table."""
@@ -331,7 +324,7 @@ def main() -> None:
             width: 100%;
         }
         div.stButton > button {
-            width: min(100%, 230px);
+            width: 100%;
             white-space: nowrap;
             margin: 0 auto;
         }
@@ -340,7 +333,7 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    with st.container(key="nav-buttons"):
+    with st.container(key="navbuttons"):
         btn_col1, btn_col2, btn_col3, btn_col4, btn_col5 = st.columns(5)
 
         if btn_col1.button("303 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
