@@ -149,3 +149,23 @@ def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
         ]
     )
     return table
+
+@st.cache_data(ttl=300)
+def get_fantasy_league_table(sheet_id: str, tab_name: str = "Scorecard") -> pd.DataFrame:
+    """Fetch the fantasy league table from the Google Sheet."""
+    encoded_tab = urllib.parse.quote(tab_name)
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={encoded_tab}"
+
+    try:
+        df = pd.read_csv(url)
+        if df.empty:
+            return pd.DataFrame()
+        
+        # Clean headers and remove string whitespace
+        df.columns = df.columns.str.strip()
+        df = df.applymap(lambda val: val.strip() if isinstance(val, str) else val)
+
+        return df
+    except Exception as exc:
+        print(f"❌ Failed to fetch fantasy league table: {exc}")
+        return pd.DataFrame()

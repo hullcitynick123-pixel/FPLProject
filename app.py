@@ -5,7 +5,7 @@ import pandas as pd
 from api_client import APIFootballClient
 import config
 from fpl_constants import MANAGER_TEAMS
-from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers, get_league_table
+from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers, get_league_table, get_fantasy_league_table
 from ceefax_theme.ceefax_theme import inject_ceefax_styles
 from ceefax_theme.ceefax_header import render_ceefax_header
 from utils.date import get_current_gameweek
@@ -245,7 +245,58 @@ def render_league_table() -> None:
     st.markdown(table_html, unsafe_allow_html=True)
 
 def render_fantasy_league_table() -> None:
-    st.text("Fetching Fantasy League Table...")
+    """Render the fantasy league scorecard in the same teletext style as the league table."""
+    table = get_fantasy_league_table(sheet_id=sheet_id, tab_name=config.SCORECARD_SHEET_NAME)
+
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>FANTASY LEAGUE TABLE</h2>", unsafe_allow_html=True)
+
+    if table.empty:
+        st.warning("Fantasy league table is unavailable right now.")
+        return
+
+    table = table.iloc[:-1, :-2]
+
+    headers = [str(col).upper() for col in table.columns]
+    rows_html = []
+    for _, row in table.iterrows():
+        cells = "".join(f"<td>{'' if pd.isna(val) else val}</td>" for val in row)
+        rows_html.append(f"<tr>{cells}</tr>")
+
+    table_html = f"""
+    <style>
+        .teletext-table {{
+            width: 100%;
+            border-collapse: collapse;
+            background: #000000;
+            color: #00FF00;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            border: 2px solid #00FF00;
+            margin-bottom: 40px;
+        }}
+        .teletext-table th, .teletext-table td {{
+            border: 1px solid #00FF00;
+            padding: 8px 10px;
+            text-align: center;
+            vertical-align: middle;
+        }}
+        .teletext-table th {{
+            background: #0000FF;
+            color: #FFFFFF;
+            text-transform: uppercase;
+        }}
+    </style>
+    <table class='teletext-table'>
+        <thead>
+            <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
+        </thead>
+        <tbody>
+            {''.join(rows_html)}
+        </tbody>
+    </table>
+    """
+    st.markdown(table_html, unsafe_allow_html=True)
+
 def main() -> None:
     if "active_page" not in st.session_state:
         st.session_state.active_page = "home"
@@ -304,16 +355,5 @@ def main() -> None:
         return;
     elif st.session_state.active_page == "fantasy_league":
         render_fantasy_league_table()
-        st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>PLAYER SEARCH</h2>", unsafe_allow_html=True)
-        player_search = st.text_input("Enter player name to search:", "")
-        api = APIFootballClient()
-        if player_search:
-            try:
-                player_response = api.fetch_player(player_search)
-                st.json(player_response)
-            except Exception as e:
-                st.error(f"Failed to fetch player data: {e}")
-            player_response = api.fetch_player(player_search, league=config.DEFAULT_LEAGUE_ID, season=2025)
-            st.json(player_response)
 if __name__ == "__main__":
     main()
