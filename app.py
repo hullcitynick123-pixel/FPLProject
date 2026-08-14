@@ -207,6 +207,7 @@ def render_league_table() -> None:
             font-family: 'VT323', monospace;
             font-size: 18px;
             border: 2px solid #00FF00;
+            margin-bottom: 40px;
         }}
         .teletext-table th, .teletext-table td {{
             border: 1px solid #00FF00;

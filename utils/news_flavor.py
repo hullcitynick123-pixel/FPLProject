@@ -28,6 +28,13 @@ MANAGER_QUOTES = [
     "\"My rivals should be worried,\" warned {manager}.",
     "\"Slept on this one all week, glad it's done,\" admitted {manager}.",
     "\"Absolute steal at that price,\" grinned {manager}.",
+    "\"This is a statement of intent,\" said {manager}.",
+    "\"If he can stay fit, this is a top-4 signing,\" said {manager}.",
+    "\"I know the fans will be happy with this,\" said {manager}.",
+    "\"Been working on this deal for months, glad it's finally done,\" said {manager}.",
+    "\"God help us. Said {manager}.",
+    "\"He's going to need to work miracles to turn this season around,\" said {manager}.",
+
 ]
 
 PLAYER_QUOTES = [
