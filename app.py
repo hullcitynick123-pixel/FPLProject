@@ -8,6 +8,8 @@ from fpl_constants import MANAGER_TEAMS
 from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers, get_league_table
 from ceefax_theme.ceefax_theme import inject_ceefax_styles
 from ceefax_theme.ceefax_header import render_ceefax_header
+from utils.date import get_current_gameweek
+from utils.news_flavor import build_dynamic_feed
 
 
 # --- Page Configuration ---
@@ -26,18 +28,9 @@ inject_ceefax_styles()
 def render_transfer_feed() -> None:
     """Render a rolling transfer news feed at the top of the page."""
     try:
-        # Determine current gameweek based on season start date
-        from datetime import datetime, timedelta
-        try:
-            season_start = datetime.strptime(config.SEASON_START_DATE, "%Y-%m-%d")
-        except:
-            season_start = datetime(2026, 8, 21)  # Default fallback
-        
-        current_date = datetime.now()
-        days_since_start = (current_date - season_start).days
-        current_gameweek = max(1, (days_since_start // 7) + 1)  # Gameweek changes weekly
-        
-        transfers = fetch_transfers(sheet_id=sheet_id, tab_name="Transfers", gameweek=current_gameweek)
+        current_gameweek = get_current_gameweek()
+        transfers = fetch_transfers(sheet_id=sheet_id, tab_name="Transfers", gameweek=current_gameweek["id"])
+        transfers = build_dynamic_feed(transfers, gameweek_id=current_gameweek.get("id", 0))
     except Exception as e:
         print(f"Failed to fetch transfers: {e}")
         transfers = []
@@ -172,7 +165,7 @@ def render_league_table() -> None:
     """Render the current Premier League standings table."""
     table = get_league_table(season=config.DEFAULT_SEASON)
 
-    st.markdown("<h2 style='color:#00FF00; margin-top:20px;'>CURRENT PREMIER LEAGUE TABLE</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>CURRENT PREMIER LEAGUE TABLE</h2>", unsafe_allow_html=True)
 
     if table.empty:
         st.warning("Standings are unavailable right now.")
@@ -304,7 +297,6 @@ def main() -> None:
     elif st.session_state.active_page == "squads":
         render_fantasy_squad_page()
     elif st.session_state.active_page == "players":
-        st.info("Player Search functionality is under development.")
         st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>PLAYER SEARCH</h2>", unsafe_allow_html=True)
         player_search = st.text_input("Enter player name to search:", "")
         api = APIFootballClient()
