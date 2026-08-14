@@ -155,6 +155,73 @@ def inject_ceefax_styles() -> None:
             color: #FFFF00 !important;
             font-family: 'VT323', monospace !important;
         }
+
+        /* Make wide tables (league/fantasy tables) horizontally scrollable instead of squashed */
+        .teletext-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+        }
+
+        /* Let button rows wrap onto multiple lines on narrow screens */
+        div[data-testid="stHorizontalBlock"] {
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+        }
+
+        /* --- Mobile breakpoint --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 26px !important; }
+            h2 { font-size: 22px !important; }
+            h3 { font-size: 18px !important; }
+
+            .ceefax-header { font-size: 18px !important; }
+
+            .stButton > button {
+                font-size: 16px !important;
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+
+            div[data-testid="stHorizontalBlock"] {
+                gap: 8px !important;
+            }
+
+            div[data-testid="stHorizontalBlock"] > div {
+                box-sizing: border-box !important;
+                flex: 1 1 calc(50% - 8px) !important;
+                min-width: calc(50% - 8px) !important;
+                margin-bottom: 8px !important;
+            }
+
+            /* Nav buttons: force a visible gap between the 2-per-row buttons */
+            .st-key-nav-buttons div[data-testid="stHorizontalBlock"] {
+                gap: 12px !important;
+                row-gap: 12px !important;
+            }
+            .st-key-nav-buttons div[data-testid="stHorizontalBlock"] > div {
+                flex: 1 1 calc(50% - 12px) !important;
+                min-width: calc(50% - 12px) !important;
+            }
+
+            /* Squads grid: one squad table per row on mobile to avoid overlap */
+            .st-key-squads-grid div[data-testid="stHorizontalBlock"] > div {
+                flex: 1 1 100% !important;
+                min-width: 100% !important;
+            }
+
+            .teletext-table {
+                font-size: 13px !important;
+            }
+
+            .teletext-table th, .teletext-table td {
+                padding: 4px 5px !important;
+            }
+
+            .transfer-marquee {
+                font-size: 11px !important;
+            }
+        }
         </style>
         """,
         unsafe_allow_html=True,

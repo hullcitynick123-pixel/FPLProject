@@ -98,6 +98,22 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
                     font-family: 'VT323', monospace;
                     text-shadow: 0px 4px 0px #000000;
                 }}
+
+                /* Shrink everything on narrow viewports so it fits within the iframe height */
+                @media (max-width: 480px) {{
+                    .ceefax-top-row {{
+                        font-size: 15px;
+                        padding: 2px 4px 4px;
+                        flex-wrap: nowrap;
+                    }}
+                    .ceefax-meta {{ gap: 8px; }}
+                    .ceefax-countdown {{ font-size: 12px; }}
+                    .ceefax-time {{ font-size: 15px; }}
+                    .ceefax-banner {{ height: 38px; }}
+                    .opx-cubes-wrapper {{ gap: 3px; margin-right: 6px; }}
+                    .opx-cube {{ width: 1.3rem; font-size: 20px; }}
+                    .ceefax-title {{ font-size: 24px; letter-spacing: 3px; }}
+                }}
             </style>
         </head>
         <body>

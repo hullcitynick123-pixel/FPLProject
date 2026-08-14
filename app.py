@@ -94,8 +94,9 @@ def render_fantasy_squad_page() -> None:
 
     # Display squads in 5-column layout (2 rows of 5)
     managers = list(squads_df.columns)
+    squads_grid = st.container(key="squads-grid")
     for i in range(0, len(managers), 5):
-        cols = st.columns(5)
+        cols = squads_grid.columns(5)
         
         for col_idx, manager_name in enumerate(managers[i:i+5]):
             with cols[col_idx]:
@@ -233,6 +234,7 @@ def render_league_table() -> None:
             display: block;
         }}
     </style>
+    <div class="teletext-table-wrapper">
     <table class='teletext-table'>
         <thead>
             <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
@@ -241,6 +243,7 @@ def render_league_table() -> None:
             {''.join(rows_html)}
         </tbody>
     </table>
+    </div>
     """
     st.markdown(table_html, unsafe_allow_html=True)
 
@@ -286,6 +289,7 @@ def render_fantasy_league_table() -> None:
             text-transform: uppercase;
         }}
     </style>
+    <div class="teletext-table-wrapper">
     <table class='teletext-table'>
         <thead>
             <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
@@ -294,6 +298,7 @@ def render_fantasy_league_table() -> None:
             {''.join(rows_html)}
         </tbody>
     </table>
+    </div>
     """
     st.markdown(table_html, unsafe_allow_html=True)
 
@@ -306,7 +311,7 @@ def main() -> None:
 
     render_ceefax_header(page_num=302, title="FOOTBALL")
 
-    st.markdown("<p style='color:#00FFFF; text-align:center;'>FANTASY FOOTBALL STATISTICAL INDEX 2026/27</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#00FFFF; text-align:center; margin:4px 0;'>FANTASY FOOTBALL STATISTICAL INDEX 2026/27</p>", unsafe_allow_html=True)
 
     st.markdown(
         """
@@ -335,18 +340,20 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    btn_col1, btn_col2, btn_col3, btn_col4, btn_col5 = st.columns(5)
+    with st.container(key="nav-buttons"):
+        btn_col1, btn_col2, btn_col3, btn_col4, btn_col5 = st.columns(5)
 
-    if btn_col1.button("303 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
-        st.session_state.active_page = "league"
-    if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
-        st.session_state.active_page = "fixtures"
-    if btn_col3.button("305 PLAYER SEARCH", use_container_width=True, key="players_tab"):
-        st.session_state.active_page = "players"
-    if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
-        st.session_state.active_page = "squads"
-    if btn_col5.button("307 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
-        st.session_state.active_page = "fantasy_league"
+        if btn_col1.button("303 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
+            st.session_state.active_page = "league"
+        if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
+            st.session_state.active_page = "fixtures"
+        if btn_col3.button("305 PLAYER SEARCH", use_container_width=True, key="players_tab"):
+            st.session_state.active_page = "players"
+        if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
+            st.session_state.active_page = "squads"
+        if btn_col5.button("307 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
+            st.session_state.active_page = "fantasy_league"
+
     if st.session_state.active_page == "league":
         render_league_table()
     elif st.session_state.active_page == "squads":
