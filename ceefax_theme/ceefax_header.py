@@ -1,6 +1,7 @@
 """Ceefax header utility for the FPL dashboard."""
 
 import streamlit.components.v1 as components
+
 from ceefax_theme.ceefax_clock import get_clock_script
 from get_fpl_data import get_time_until_next_gameweek
 from utils.date import get_current_date

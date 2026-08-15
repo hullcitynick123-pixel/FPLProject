@@ -1,6 +1,8 @@
 from datetime import datetime
+
 import requests
 import streamlit as st
+
 
 def get_current_date() -> str:
     """Return the current date in 'Day DD Mon HH:MM:SS' format."""

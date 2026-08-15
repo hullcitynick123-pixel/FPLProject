@@ -1,10 +1,13 @@
 """Data processing and feature engineering module for FPL analytics."""
 
 import urllib.parse
+
 import pandas as pd
 import streamlit as st
-from api_client import APIFootballClient
+
 import config
+from api_client import APIFootballClient
+
 
 @st.cache_data(ttl=300)
 def fetch_draft_squads(sheet_id: str, tab_name: str = "current_squad") -> pd.DataFrame:

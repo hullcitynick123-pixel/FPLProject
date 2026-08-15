@@ -1,16 +1,21 @@
 """Streamlit Dashboard for Premier League & FPL Analytics."""
 
-import streamlit as st
 import pandas as pd
-from api_client import APIFootballClient
+import streamlit as st
+
 import config
-from fpl_constants import MANAGER_TEAMS
-from data_processor import fetch_draft_squads, get_manager_squad_by_position, fetch_transfers, get_league_table, get_fantasy_league_table
-from ceefax_theme.ceefax_theme import inject_ceefax_styles
 from ceefax_theme.ceefax_header import render_ceefax_header
+from ceefax_theme.ceefax_theme import inject_ceefax_styles
+from data_processor import (
+    fetch_draft_squads,
+    fetch_transfers,
+    get_fantasy_league_table,
+    get_league_table,
+    get_manager_squad_by_position,
+)
+from fpl_constants import MANAGER_TEAMS
 from utils.date import get_current_gameweek
 from utils.news_flavor import build_dynamic_feed
-
 
 # --- Page Configuration ---
 st.set_page_config(
