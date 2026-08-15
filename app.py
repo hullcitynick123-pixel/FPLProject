@@ -115,11 +115,25 @@ def render_fantasy_squad_page() -> None:
         rows_html = "".join(
             f"<tr><td>{item['Position']}</td><td>{item['Player']}</td></tr>" for item in squad_data
         )
-        table_html = (
-            "<table class='squad-table'>"
-            "<thead><tr><th>Position</th><th>Player</th></tr></thead>"
-            f"<tbody>{rows_html}</tbody>"
-            "</table>"
+        table_html = build_ceefax_table_html(
+            ["POSITION", "PLAYER"],
+            [rows_html],
+            extra_css="""
+            .ceefax-table-shell {
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .ceefax-table {
+                table-layout: auto;
+                font-size: 16px;
+                min-width: 180px;
+            }
+            .ceefax-table th, .ceefax-table td {
+                padding: 3px 5px;
+                white-space: nowrap;
+            }
+            """,
         )
 
         header_html = (
@@ -155,19 +169,108 @@ def render_fantasy_squad_page() -> None:
     """
     st.markdown(grid_html, unsafe_allow_html=True)
 
+def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css: str = "") -> str:
+    """Build a compact Ceefax-style table with optional table-specific CSS."""
+    table_html = f"""
+    <style>
+        .ceefax-table-shell {{
+            width: min(100%, 820px);
+            margin: 18px auto 40px;
+            padding: 10px 12px 12px;
+            background: #000000;
+        }}
+        .ceefax-table {{
+            width: 100%;
+            border-collapse: collapse;
+            background: #000000;
+            color: #FFFFFF;
+            font-family: 'VT323', monospace;
+            font-size: 19px;
+            table-layout: fixed;
+        }}
+        .ceefax-table th, .ceefax-table td {{
+            border: 0;
+            border-bottom: 1px solid #073807;
+            padding: 3px 5px;
+            text-align: center;
+            vertical-align: middle;
+            line-height: 1.05;
+        }}
+        .ceefax-table th {{
+            background: #0000FF;
+            color: #FFFFFF;
+            text-transform: uppercase;
+            font-size: 17px;
+            padding: 4px 5px;
+        }}
+        .ceefax-table tr:hover td {{
+            background: #001c00;
+            color: #FFFFFF !important;
+        }}
+        {extra_css}
+        @media (max-width: 768px) {{
+            .ceefax-table-shell {{ padding: 7px; }}
+            .ceefax-table {{ font-size: 14px; }}
+            .ceefax-table th {{ font-size: 13px; }}
+            .ceefax-table th, .ceefax-table td {{ padding: 3px 2px; }}
+        }}
+    </style>
+    <div class="teletext-table-wrapper">
+    <div class="ceefax-table-shell">
+    <table class='ceefax-table'>
+        <thead>
+            <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
+        </thead>
+        <tbody>
+            {''.join(rows_html)}
+        </tbody>
+    </table>
+    </div>
+    </div>
+    """
+    return table_html
+
+def render_ceefax_table(headers: list[str], rows_html: list[str], extra_css: str = "") -> None:
+    """Render a compact Ceefax-style table with optional table-specific CSS."""
+    st.markdown(build_ceefax_table_html(headers, rows_html, extra_css), unsafe_allow_html=True)
+
 def render_league_table() -> None:
-    """Render the current Premier League standings table."""
+    """Render the current Premier League standings table with zone borders."""
     table = get_league_table(season=config.DEFAULT_SEASON)
 
-    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>CURRENT PREMIER LEAGUE TABLE</h2>", unsafe_allow_html=True)
-
     if table.empty:
+        st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>CURRENT PREMIER LEAGUE TABLE</h2>", unsafe_allow_html=True)
         st.warning("Standings are unavailable right now.")
         return
 
     headers = ["POS", "TEAM", "P", "W", "D", "L", "GF", "GA", "GD", "PTS", "FORM"]
     rows_html = []
+
     for _, row in table.iterrows():
+        rank = int(row['Rank'])
+
+        # Teletext zone colors & section bottom dividers
+        zone_color = "#00FF00"  # Default Teletext Green
+        divider_css = ""
+
+        if rank <= 4:
+            zone_color = "#00FFFF"  # Champions League (Teletext Cyan)
+            if rank == 4:
+                divider_css = "border-bottom: 2px solid #00FFFF !important;"
+        elif rank == 5:
+            zone_color = "#FFFF00"  # Europa League (Teletext Yellow)
+            divider_css = "border-bottom: 2px solid #FFFF00 !important;"
+        elif rank == 6:
+            zone_color = "#00FFFF"  # Conference League (Teletext Cyan)
+            divider_css = "border-bottom: 2px solid #00FFFF !important;"
+        elif rank >= 18:
+            zone_color = "#FF0000"  # Relegation (Teletext Red)
+        elif rank == 17:
+            divider_css = "border-bottom: 2px solid #FF0000 !important;"
+
+        # Row border style
+        row_style = f"style='--zone-color: {zone_color}; {divider_css}'"
+
         team_logo = row.get("Team_Logo") or ""
         team_name = row.get("Team") or ""
         team_cell = (
@@ -175,9 +278,10 @@ def render_league_table() -> None:
             if team_logo
             else f"<div class='team-cell'><span>{team_name}</span></div>"
         )
+
         rows_html.append(
-            "<tr>"
-            f"<td>{int(row['Rank'])}</td>"
+            f"<tr {row_style}>"
+            f"<td class='position' style='color: {zone_color};'>{rank}</td>"
             f"<td>{team_cell}</td>"
             f"<td>{int(row['Played'])}</td>"
             f"<td>{int(row['Won'])}</td>"
@@ -190,61 +294,59 @@ def render_league_table() -> None:
             f"<td>{row['Form']}</td>"
             "</tr>"
         )
-
-    table_html = f"""
-    <style>
-        .teletext-table {{
-            width: 100%;
-            border-collapse: collapse;
-            background: #000000;
-            color: #00FF00;
-            font-family: 'VT323', monospace;
-            font-size: 18px;
-            border: 2px solid #00FF00;
-            margin-bottom: 40px;
-        }}
-        .teletext-table th, .teletext-table td {{
-            border: 1px solid #00FF00;
-            padding: 8px 10px;
-            text-align: center;
-            vertical-align: middle;
-        }}
-        .teletext-table th {{
-            background: #0000FF;
-            color: #FFFFFF;
-            text-transform: uppercase;
-        }}
-        .team-cell {{
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>LIVE PREMIER LEAGUE TABLE</h2>", unsafe_allow_html=True)
+    render_ceefax_table(
+        headers,
+        rows_html,
+        extra_css="""
+        .ceefax-table-shell {
+            width: min(100%, 1400px);
+        }
+        .ceefax-table {
+            font-size: 23px;
+        }
+        .ceefax-table th, .ceefax-table td {
+            padding: 6px 10px;
+        }
+        .ceefax-table th:nth-child(2), .ceefax-table td:nth-child(2) {
+            width: 36%;
+            text-align: left;
+        }
+        .ceefax-table tr {
+            border-left: 5px solid var(--zone-color);
+        }
+        .ceefax-table .position {
+            font-weight: bold;
+            width: 7%;
+        }
+        .team-cell {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 8px;
+            gap: 6px;
             text-align: left;
-        }}
-        .team-cell img {{
-            width: 20px;
-            height: 20px;
+            color: #FFFFFF;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .team-cell img {
+            width: 18px;
+            height: 18px;
             display: block;
-        }}
-    </style>
-    <div class="teletext-table-wrapper">
-    <table class='teletext-table'>
-        <thead>
-            <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
-        </thead>
-        <tbody>
-            {''.join(rows_html)}
-        </tbody>
-    </table>
-    </div>
-    """
-    st.markdown(table_html, unsafe_allow_html=True)
+        }
+        @media (max-width: 768px) {
+            .ceefax-table th:nth-child(2), .ceefax-table td:nth-child(2) { width: 31%; }
+            .team-cell img { width: 14px; height: 14px; }
+        }
+        """,
+    )
 
 def render_fantasy_league_table() -> None:
     """Render the fantasy league scorecard in the same teletext style as the league table."""
     table = get_fantasy_league_table(sheet_id=sheet_id, tab_name=config.SCORECARD_SHEET_NAME)
 
-    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>FANTASY LEAGUE TABLE</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>LIVE FANTASY LEAGUE TABLE</h2>", unsafe_allow_html=True)
 
     if table.empty:
         st.warning("Fantasy league table is unavailable right now.")
@@ -258,42 +360,31 @@ def render_fantasy_league_table() -> None:
         cells = "".join(f"<td>{'' if pd.isna(val) else val}</td>" for val in row)
         rows_html.append(f"<tr>{cells}</tr>")
 
-    table_html = f"""
-    <style>
-        .teletext-table {{
-            width: 100%;
-            border-collapse: collapse;
-            background: #000000;
-            color: #00FF00;
-            font-family: 'VT323', monospace;
-            font-size: 18px;
-            border: 2px solid #00FF00;
-            margin-bottom: 40px;
-        }}
-        .teletext-table th, .teletext-table td {{
-            border: 1px solid #00FF00;
-            padding: 8px 10px;
-            text-align: center;
-            vertical-align: middle;
-        }}
-        .teletext-table th {{
-            background: #0000FF;
-            color: #FFFFFF;
-            text-transform: uppercase;
-        }}
-    </style>
-    <div class="teletext-table-wrapper">
-    <table class='teletext-table'>
-        <thead>
-            <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
-        </thead>
-        <tbody>
-            {''.join(rows_html)}
-        </tbody>
-    </table>
-    </div>
-    """
-    st.markdown(table_html, unsafe_allow_html=True)
+    render_ceefax_table(
+        headers,
+        rows_html,
+        extra_css="""
+        .ceefax-table-shell {
+            width: min(100%, 1400px);
+            margin-left: 0;
+            margin-right: 0;
+        }
+        .ceefax-table {
+            table-layout: auto;
+            font-size: 23px;
+            min-width: 760px;
+        }
+        .ceefax-table th, .ceefax-table td {
+            padding: 6px 10px;
+            white-space: nowrap;
+        }
+        @media (max-width: 768px) {
+            .ceefax-table {
+                font-size: 16px;
+            }
+        }
+        """,
+    )
 
 def main() -> None:
     if "active_page" not in st.session_state:

@@ -50,7 +50,7 @@ def get_manager_squad_by_position(squads_df: pd.DataFrame, manager_name: str) ->
     }
 
 @st.cache_data(ttl=60)
-def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int = None) -> list:
+def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int | None = None) -> list:
 
     """Fetch transfer news from the Transfers sheet for a specific gameweek.
     
