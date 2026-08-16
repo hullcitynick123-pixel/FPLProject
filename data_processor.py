@@ -9,6 +9,34 @@ import config
 from api_client import APIFootballClient
 
 
+def build_player_stats_rows(stats: dict | None) -> list[tuple[str, str | int]]:
+    """Flatten API-Football player statistics into a display-friendly list."""
+    if not isinstance(stats, dict):
+        return []
+
+    games = stats.get("games") or {}
+    goals = stats.get("goals") or {}
+    shots = stats.get("shots") or {}
+    passes = stats.get("passes") or {}
+    cards = stats.get("cards") or {}
+    penalties = stats.get("penalty") or {}
+
+    rows: list[tuple[str, str | int]] = [
+        ("Matches", games.get("appearences", 0)),
+        ("Starts", games.get("lineups", 0)),
+        ("Minutes", games.get("minutes", 0)),
+        ("Goals", goals.get("total", 0)),
+        ("Assists", goals.get("assists", 0)),
+        ("Shots", shots.get("total", 0)),
+        ("On target", shots.get("on", 0)),
+        ("Pass accuracy", passes.get("accuracy", "0%")),
+        ("Yellow cards", cards.get("yellow", 0)),
+        ("Red cards", cards.get("red", 0)),
+        ("Penalties scored", penalties.get("scored", 0)),
+    ]
+    return rows
+
+
 @st.cache_data(ttl=300)
 def fetch_draft_squads(sheet_id: str, tab_name: str = "current_squad") -> pd.DataFrame:
     """Fetch and slice the 10-manager squad matrix (Columns A-J, Rows 1-19)."""
@@ -163,10 +191,15 @@ def get_fantasy_league_table(sheet_id: str, tab_name: str = "Scorecard") -> pd.D
         df = pd.read_csv(url)
         if df.empty:
             return pd.DataFrame()
-        
-        # Clean headers and remove string whitespace
-        df.columns = df.columns.str.strip()
-        df = df.applymap(lambda val: val.strip() if isinstance(val, str) else val)
+
+        # Clean column names
+        df.columns = [str(col).strip() for col in df.columns]
+
+        # Clean string cell values
+        for col in df.columns:
+            df[col] = df[col].map(
+                lambda value: value.strip() if isinstance(value, str) else value
+            )
 
         return df
     except Exception as exc:

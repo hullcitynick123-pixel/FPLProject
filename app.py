@@ -4,9 +4,11 @@ import pandas as pd
 import streamlit as st
 
 import config
+from api_client import APIFootballClient
 from ceefax_theme.ceefax_header import render_ceefax_header
 from ceefax_theme.ceefax_theme import inject_ceefax_styles
 from data_processor import (
+    build_player_stats_rows,
     fetch_draft_squads,
     fetch_transfers,
     get_fantasy_league_table,
@@ -83,6 +85,60 @@ def render_transfer_feed() -> None:
     
     st.markdown(marquee_html, unsafe_allow_html=True)
 
+def render_player_modal(player_name: str) -> None:
+    """Display a modal with player stats and a season selector."""
+    seasons = [2022, 2023, 2024, 2025]
+    if "player_modal_year" not in st.session_state:
+        st.session_state.player_modal_year = config.DEFAULT_SEASON
+
+    @st.dialog(f"Player profile: {player_name}")
+    def modal_content() -> None:
+        selected_year = st.selectbox(
+            "Season",
+            seasons,
+            index=seasons.index(st.session_state.player_modal_year) if st.session_state.player_modal_year in seasons else len(seasons) - 1,
+            key="player_modal_year_select",
+        )
+        st.session_state.player_modal_year = selected_year
+
+        client = APIFootballClient()
+        try:
+            response = client.fetch_player(player_name, league=config.DEFAULT_LEAGUE_ID, season=selected_year)
+            results = response.get("response", [])
+            if not results:
+                st.warning(f"No data found for {player_name} in {selected_year}.")
+                return
+
+            player = results[0].get("player", {})
+            statistics = results[0].get("statistics", [{}])[0]
+
+            col_photo, col_meta = st.columns([1, 3])
+            with col_photo:
+                if player.get("photo"):
+                    st.image(player["photo"], width=120)
+            with col_meta:
+                st.markdown(f"### {player.get('name', player_name)}")
+                items = [
+                    player.get("nationality"),
+                    player.get("position"),
+                    player.get("age"),
+                    player.get("height"),
+                    player.get("weight"),
+                ]
+                st.caption(" • ".join(str(item) for item in items if item))
+
+            stat_rows = build_player_stats_rows(statistics)
+            if stat_rows:
+                stat_df = pd.DataFrame(stat_rows, columns=["Metric", "Value"])
+                st.dataframe(stat_df, hide_index=True, use_container_width=True)
+            else:
+                st.info("Statistics are currently unavailable for this player.")
+        except Exception as exc:
+            st.error(f"Unable to load player stats: {exc}")
+
+    modal_content()
+
+
 def render_fantasy_squad_page() -> None:
     """Render the Fantasy Squads page with manager selections."""
     st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>FANTASY SQUADS</h2>", unsafe_allow_html=True)
@@ -97,92 +153,45 @@ def render_fantasy_squad_page() -> None:
         st.warning("No squad data available.")
         return
 
-    # Build each squad card as raw HTML in a CSS grid so column count is fully
-    # controlled by CSS (not Streamlit's own inline column widths), which lets
-    # the mobile media query reliably collapse it to one card per row.
     managers = list(squads_df.columns)
-    cards_html = []
-    for manager_name in managers:
+    columns = st.columns(min(5, max(1, len(managers))))
+
+    for index, manager_name in enumerate(managers):
         team_name = MANAGER_TEAMS.get(manager_name, manager_name)
-
         squad_dict = get_manager_squad_by_position(squads_df, manager_name)
-        if not squad_dict:
-            cards_html.append(
-                f"<div class='squad-card'><p style='color:#00FFFF;'>No squad data for {manager_name}.</p></div>"
-            )
-            continue
 
-        squad_data = []
-        for position, players in squad_dict.items():
-            for player in players:
-                squad_data.append({"Position": position, "Player": player})
+        with columns[index % len(columns)]:
+            st.markdown(f"<h3 style='color:#FFFF00; text-align:center; margin-bottom:4px;'>{team_name}</h3>", unsafe_allow_html=True)
+            st.caption(f"Manager: {manager_name}")
 
-        rows_html = "".join(
-            f"<tr><td>{item['Position']}</td><td>{item['Player']}</td></tr>" for item in squad_data
-        )
-        table_html = build_ceefax_table_html(
-            ["POSITION", "PLAYER"],
-            [rows_html],
-            extra_css="""
-            .ceefax-table-shell {
-                width: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            .ceefax-table {
-                table-layout: auto;
-                font-size: 16px;
-                min-width: 180px;
-            }
-            .ceefax-table th, .ceefax-table td {
-                padding: 3px 5px;
-                white-space: nowrap;
-            }
-            """,
-        )
+            if not squad_dict:
+                st.write("No squad data.")
+                continue
 
-        header_html = (
-            f"<div style='text-align:center; width:100%;'>"
-            f"<h3 style='color:#FFFF00; margin:0 0 4px 0; padding:0;'>{team_name}</h3>"
-            f"<p style='color:#00FFFF; margin:0 0 8px 0; padding:0; font-size:11px;'>(Manager: {manager_name})</p>"
-            f"</div>"
-        )
-
-        cards_html.append(f"<div class='squad-card'>{header_html}{table_html}</div>")
-
-    grid_html = f"""
-    <style>
-        .squad-grid {{
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 16px;
-        }}
-        .squad-card {{
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 0;
-            overflow-x: auto;
-        }}
-        @media (max-width: 768px) {{
-            .squad-grid {{
-                grid-template-columns: 1fr;
-            }}
-        }}
-    </style>
-    <div class="squad-grid">{''.join(cards_html)}</div>
-    """
-    st.markdown(grid_html, unsafe_allow_html=True)
+            for position, players in squad_dict.items():
+                st.markdown(f"<p style='color:#00FFFF; margin:8px 0 4px 0;'>{position}</p>", unsafe_allow_html=True)
+                for player in players:
+                    if st.button(player, key=f"player_{manager_name}_{player}", use_container_width=True):
+                        st.session_state.selected_player = player
+                        render_player_modal(player)
 
 def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css: str = "") -> str:
     """Build a compact Ceefax-style table with optional table-specific CSS."""
     table_html = f"""
     <style>
+        .teletext-table-wrapper {{
+            margin: 0 0 18px 0;
+            padding-bottom: 8px;
+            border-bottom: 4px solid #FF00FF;
+        }}
         .ceefax-table-shell {{
             width: min(100%, 820px);
-            margin: 18px auto 40px;
-            padding: 10px 12px 12px;
+            margin: 0 auto 0;
+            padding: 12px 12px 10px;
             background: #000000;
+            border: 2px solid #00FF00;
+            box-shadow: inset 0 0 0 2px #00FFFF;
+            box-sizing: border-box;
         }}
         .ceefax-table {{
             width: 100%;
@@ -200,6 +209,9 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
             text-align: center;
             vertical-align: middle;
             line-height: 1.05;
+        }}
+        .ceefax-table tbody tr:last-child td {{
+            border-bottom: 2px solid #FFFF00;
         }}
         .ceefax-table th {{
             background: #0000FF;
@@ -237,7 +249,10 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
 
 def render_ceefax_table(headers: list[str], rows_html: list[str], extra_css: str = "") -> None:
     """Render a compact Ceefax-style table with optional table-specific CSS."""
-    st.markdown(build_ceefax_table_html(headers, rows_html, extra_css), unsafe_allow_html=True)
+    divider_html = """
+    <div style='width:100%; height:10px; background:linear-gradient(90deg, #00FF00 0%, #00FFFF 20%, #FF00FF 50%, #FFFF00 80%, #00FF00 100%); margin: 12px 0 10px; border: 2px solid #000000; box-sizing:border-box;'></div>
+    """
+    st.markdown(divider_html + build_ceefax_table_html(headers, rows_html, extra_css), unsafe_allow_html=True)
 
 def render_league_table() -> None:
     """Render the current Premier League standings table with zone borders."""
@@ -373,6 +388,11 @@ def render_fantasy_league_table() -> None:
             width: min(100%, 1400px);
             margin-left: 0;
             margin-right: 0;
+            border: 2px solid #FF00FF;
+            box-shadow: inset 0 0 0 2px #00FFFF;
+        }
+        .ceefax-table tbody tr:last-child td {
+            border-bottom: 2px solid #FF00FF;
         }
         .ceefax-table {
             table-layout: auto;
