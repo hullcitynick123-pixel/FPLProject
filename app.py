@@ -407,6 +407,11 @@ def render_fantasy_league_table() -> None:
         table_class="fantasy-league-table",
     )
 
+def render_fixtures_page() -> None:
+    """Render the fixtures and results page."""
+    st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>FIXTURES & RESULTS</h2>", unsafe_allow_html=True)
+    st.info("Fixtures are coming soon.")
+
 def render_navigation() -> None:
     """Render the main page navigation buttons."""
     st.markdown(
@@ -453,12 +458,12 @@ def render_active_page() -> None:
     page_renderers = {
         "league": render_league_table,
         "squads": render_fantasy_squad_page,
+        "fixtures": render_fixtures_page,
         "fantasy_league": render_fantasy_league_table,
     }
     renderer = page_renderers.get(st.session_state.active_page)
     if renderer:
         renderer()
-
 
 def main() -> None:
     """Render the dashboard shell and the currently selected page."""
