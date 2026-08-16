@@ -14,14 +14,11 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
         <html>
         <head>
             <style>
-                @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-                
                 body {{
                     margin: 0;
                     padding: 0;
                     background-color: #000000;
                     color: #FFFFFF;
-                    font-family: 'VT323', monospace;
                     user-select: none;
                 }}
                 
@@ -62,14 +59,13 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
                 .opx-cubes-wrapper {{
                     display: flex;
                     gap: 6px; /* Space between the 3 cubes */
-                    margin-right: 12px; /* Space between cubes and title */
+                    margin-right: 12px;
                 }}
 
                 .opx-cube {{
                     background-color: #FFFFFF;
                     color: #000000;
-                    font-family: 'VT323', monospace;
-                    font-size: 36px;
+                    font-size: 5rem;
                     font-weight: 900;
                     width: 2rem;
                     height: 100%;
@@ -95,7 +91,6 @@ def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
                     letter-spacing: 8px;
                     text-transform: uppercase;
                     margin: 0;
-                    font-family: 'VT323', monospace;
                     text-shadow: 0px 4px 0px #000000;
                 }}
 
