@@ -392,17 +392,8 @@ def render_fantasy_league_table() -> None:
         """,
     )
 
-def main() -> None:
-    if "active_page" not in st.session_state:
-        st.session_state.active_page = "home"
-
-    # Render transfer feed
-    render_transfer_feed()
-
-    render_ceefax_header(page_num=302, title="FOOTBALL")
-
-    st.markdown("<p style='color:#00FFFF; text-align:center; margin:4px 0;'>FANTASY FOOTBALL STATISTICAL INDEX 2026/27</p>", unsafe_allow_html=True)
-
+def render_navigation() -> None:
+    """Render the main page navigation buttons."""
     st.markdown(
         """
         <style>
@@ -431,26 +422,44 @@ def main() -> None:
     )
 
     with st.container(key="navbuttons"):
-        btn_col1, btn_col2, btn_col3, btn_col4, btn_col5 = st.columns(5)
+        btn_col1, btn_col2, btn_col3, btn_col4 = st.columns(4)
 
         if btn_col1.button("303 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
             st.session_state.active_page = "league"
         if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
             st.session_state.active_page = "fixtures"
-        if btn_col3.button("305 PLAYER SEARCH", use_container_width=True, key="players_tab"):
-            st.session_state.active_page = "players"
-        if btn_col4.button("306 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
+        if btn_col4.button("305 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
             st.session_state.active_page = "squads"
-        if btn_col5.button("307 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
+        if btn_col3.button("306 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
             st.session_state.active_page = "fantasy_league"
 
-    if st.session_state.active_page == "league":
-        render_league_table()
-    elif st.session_state.active_page == "squads":
-        render_fantasy_squad_page()
-    elif st.session_state.active_page == "players":
-        return;
-    elif st.session_state.active_page == "fantasy_league":
-        render_fantasy_league_table()
+def render_active_page() -> None:
+    """Render the page selected in session state."""
+    page_renderers = {
+        "league": render_league_table,
+        "squads": render_fantasy_squad_page,
+        "fantasy_league": render_fantasy_league_table,
+    }
+    renderer = page_renderers.get(st.session_state.active_page)
+    if renderer:
+        renderer()
+
+
+def main() -> None:
+    """Render the dashboard shell and the currently selected page."""
+    if "active_page" not in st.session_state:
+        st.session_state.active_page = "home"
+
+    render_transfer_feed()
+    render_ceefax_header(page_num=302, title="FOOTBALL")
+    st.markdown(
+        "<p style='color:#00FFFF; text-align:center; margin:4px 0;'>"
+        "FANTASY FOOTBALL STATISTICAL INDEX 2026/27</p>",
+        unsafe_allow_html=True,
+    )
+    render_navigation()
+    render_active_page()
+
+
 if __name__ == "__main__":
     main()

@@ -1,9 +1,7 @@
 """Ceefax / Teletext 1980s Retro Theme for Streamlit."""
 
-import datetime
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 
 def inject_ceefax_styles() -> None:
@@ -177,7 +175,7 @@ def inject_ceefax_styles() -> None:
            exactly the same width regardless of label length. */
         .st-key-navbuttons div[data-testid="stHorizontalBlock"] {
             display: grid !important;
-            grid-template-columns: repeat(5, 1fr) !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             gap: 12px !important;
         }
         .st-key-navbuttons div[data-testid="stColumn"] {
@@ -246,64 +244,4 @@ def inject_ceefax_styles() -> None:
         </style>
         """,
         unsafe_allow_html=True,
-    )
-
-
-def render_ceefax_header(page_num: int = 302, title: str = "FOOTBALL") -> None:
-    """Render the classic top header line seen on BBC Ceefax."""
-    components.html(
-        f"""
-        <html>
-        <head>
-            <style>
-            @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
-                body {{
-                    margin: 0;
-                    padding: 0;
-                    background-color: #000000;
-                    color: #FFFFFF;
-                    font-family: 'VT323', monospace;
-                }}
-                .ceefax-header {{
-                    background-color: #000000;
-                    color: #00FFFF;
-                    font-size: 28px;
-                    font-family: 'VT323', monospace;
-                    border-bottom: 4px solid #0000FF;
-                    padding: 4px 0px;
-                    margin: 0;
-                    display: flex;
-                    justify-content: space-between;
-                }}
-                .ceefax-page-num {{ color: #FFFF00; font-weight: bold; }}
-                .ceefax-title {{ color: #FFFFFF; background-color: #0000FF; padding: 0 8px; }}
-                .ceefax-time {{ color: #00FF00; }}
-            </style>
-        </head>
-        <body>
-            <div class="ceefax-header">
-                <span>CEEFAX 1 <span class="ceefax-page-num">{page_num}</span></span>
-                <span class="ceefax-title">{title}</span>
-                <span class="ceefax-time" id="ceefax-time">{datetime.datetime.now().strftime("%a %d %b %H:%M:%S")}</span>
-            </div>
-            <script>
-            (function() {{
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                const clock = document.getElementById('ceefax-time');
-                if (!clock) return;
-                function updateTime() {{
-                    const now = new Date();
-                    const formatted = `${{days[now.getDay()]}} ${{String(now.getDate()).padStart(2, '0')}} ${{months[now.getMonth()]}} ${{String(now.getHours()).padStart(2, '0')}}:${{String(now.getMinutes()).padStart(2, '0')}}:${{String(now.getSeconds()).padStart(2, '0')}}`;
-                    clock.textContent = formatted;
-                }}
-                updateTime();
-                setInterval(updateTime, 1000);
-            }})();
-            </script>
-        </body>
-        </html>
-        """,
-        height=100,
-        scrolling=False,
     )
