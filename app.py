@@ -60,7 +60,6 @@ def render_transfer_feed() -> None:
             color: #FF00FF;
             border: 2px solid #FF00FF;
             padding: 12px 10px;
-            font-family: 'VT323', monospace;
             font-size: 14px;
             font-weight: bold;
             text-transform: uppercase;
@@ -138,7 +137,6 @@ def render_player_modal(player_name: str) -> None:
 
     modal_content()
 
-
 def render_fantasy_squad_page() -> None:
     """Render the Fantasy Squads page with manager selections."""
     st.markdown("<h2 style='color:#00FF00; margin-top:20px; text-align:center;'>FANTASY SQUADS</h2>", unsafe_allow_html=True)
@@ -179,26 +177,17 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
     """Build a compact Ceefax-style table with optional table-specific CSS."""
     table_html = f"""
     <style>
-        .teletext-table-wrapper {{
-            margin: 0 0 18px 0;
-            padding-bottom: 8px;
-            border-bottom: 4px solid #FF00FF;
-        }}
         .ceefax-table-shell {{
             width: min(100%, 820px);
             margin: 0 auto 0;
             padding: 12px 12px 10px;
             background: #000000;
-            border: 2px solid #00FF00;
-            box-shadow: inset 0 0 0 2px #00FFFF;
-            box-sizing: border-box;
         }}
         .ceefax-table {{
             width: 100%;
             border-collapse: collapse;
             background: #000000;
             color: #FFFFFF;
-            font-family: 'VT323', monospace;
             font-size: 19px;
             table-layout: fixed;
         }}
@@ -209,9 +198,6 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
             text-align: center;
             vertical-align: middle;
             line-height: 1.05;
-        }}
-        .ceefax-table tbody tr:last-child td {{
-            border-bottom: 2px solid #FFFF00;
         }}
         .ceefax-table th {{
             background: #0000FF;
@@ -249,10 +235,7 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
 
 def render_ceefax_table(headers: list[str], rows_html: list[str], extra_css: str = "") -> None:
     """Render a compact Ceefax-style table with optional table-specific CSS."""
-    divider_html = """
-    <div style='width:100%; height:10px; background:linear-gradient(90deg, #00FF00 0%, #00FFFF 20%, #FF00FF 50%, #FFFF00 80%, #00FF00 100%); margin: 12px 0 10px; border: 2px solid #000000; box-sizing:border-box;'></div>
-    """
-    st.markdown(divider_html + build_ceefax_table_html(headers, rows_html, extra_css), unsafe_allow_html=True)
+    st.markdown(build_ceefax_table_html(headers, rows_html, extra_css), unsafe_allow_html=True)
 
 def render_league_table() -> None:
     """Render the current Premier League standings table with zone borders."""
@@ -385,19 +368,13 @@ def render_fantasy_league_table() -> None:
         rows_html,
         extra_css="""
         .ceefax-table-shell {
-            width: min(100%, 1400px);
+            width: min(80%, 1400px);
             margin-left: 0;
             margin-right: 0;
-            border: 2px solid #FF00FF;
-            box-shadow: inset 0 0 0 2px #00FFFF;
-        }
-        .ceefax-table tbody tr:last-child td {
-            border-bottom: 2px solid #FF00FF;
         }
         .ceefax-table {
             table-layout: auto;
             font-size: 23px;
-            min-width: 760px;
         }
         .ceefax-table th, .ceefax-table td {
             padding: 6px 10px;
@@ -406,6 +383,10 @@ def render_fantasy_league_table() -> None:
         @media (max-width: 768px) {
             .ceefax-table {
                 font-size: 16px;
+            }
+            .ceefax-table th, .ceefax-table td {
+                white-space: normal;
+                overflow-wrap: anywhere;
             }
         }
         """,
