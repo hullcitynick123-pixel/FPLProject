@@ -196,6 +196,11 @@ def inject_ceefax_styles() -> None:
             margin: 0 !important;
             white-space: normal !important;
         }
+        .st-key-navbuttons .stButton > button {
+            height: 64px !important;
+            min-height: 64px !important;
+            line-height: 1.1 !important;
+        }
 
         /* --- Mobile breakpoint --- */
         @media (max-width: 768px) {

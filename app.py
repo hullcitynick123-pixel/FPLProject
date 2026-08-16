@@ -173,7 +173,12 @@ def render_fantasy_squad_page() -> None:
                         st.session_state.selected_player = player
                         render_player_modal(player)
 
-def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css: str = "") -> str:
+def build_ceefax_table_html(
+    headers: list[str],
+    rows_html: list[str],
+    extra_css: str = "",
+    table_class: str = "",
+) -> str:
     """Build a compact Ceefax-style table with optional table-specific CSS."""
     table_html = f"""
     <style>
@@ -220,7 +225,7 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
     </style>
     <div class="teletext-table-wrapper">
     <div class="ceefax-table-shell">
-    <table class='ceefax-table'>
+    <table class='ceefax-table {table_class}'>
         <thead>
             <tr>{''.join(f'<th>{header}</th>' for header in headers)}</tr>
         </thead>
@@ -233,9 +238,17 @@ def build_ceefax_table_html(headers: list[str], rows_html: list[str], extra_css:
     """
     return table_html
 
-def render_ceefax_table(headers: list[str], rows_html: list[str], extra_css: str = "") -> None:
+def render_ceefax_table(
+    headers: list[str],
+    rows_html: list[str],
+    extra_css: str = "",
+    table_class: str = "",
+) -> None:
     """Render a compact Ceefax-style table with optional table-specific CSS."""
-    st.markdown(build_ceefax_table_html(headers, rows_html, extra_css), unsafe_allow_html=True)
+    st.markdown(
+        build_ceefax_table_html(headers, rows_html, extra_css, table_class),
+        unsafe_allow_html=True,
+    )
 
 def render_league_table() -> None:
     """Render the current Premier League standings table with zone borders."""
@@ -381,15 +394,17 @@ def render_fantasy_league_table() -> None:
             white-space: nowrap;
         }
         @media (max-width: 768px) {
-            .ceefax-table {
+            .fantasy-league-table {
                 font-size: 16px;
+                min-width: 760px;
             }
-            .ceefax-table th, .ceefax-table td {
+            .fantasy-league-table th, .fantasy-league-table td {
                 white-space: normal;
                 overflow-wrap: anywhere;
             }
         }
         """,
+        table_class="fantasy-league-table",
     )
 
 def render_navigation() -> None:
