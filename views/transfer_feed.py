@@ -3,7 +3,7 @@
 import streamlit as st
 
 import config
-from data.data_processor import fetch_transfers
+from data_processor import fetch_transfers
 from utils.date import get_current_gameweek
 from utils.news_flavor import build_dynamic_feed
 

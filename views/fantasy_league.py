@@ -5,7 +5,7 @@ import streamlit as st
 
 import config
 from ceefax_theme.ceefax_table import render_ceefax_table
-from data.data_processor import get_fantasy_league_table
+from data_processor import get_fantasy_league_table
 
 
 def render_fantasy_league_table() -> None:

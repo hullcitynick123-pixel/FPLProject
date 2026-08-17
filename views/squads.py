@@ -3,7 +3,7 @@
 import streamlit as st
 
 import config
-from data.data_processor import fetch_draft_squads, get_manager_squad_by_position
+from data_processor import fetch_draft_squads, get_manager_squad_by_position
 from fpl_constants import MANAGER_TEAMS
 from views.player_modal import render_player_modal
 
