@@ -5,7 +5,7 @@ import streamlit as st
 
 import config
 from api_client import APIFootballClient
-from data_processor import build_player_stats_rows
+from data.data_processor import build_player_stats_rows
 
 
 def render_player_modal(player_name: str) -> None:

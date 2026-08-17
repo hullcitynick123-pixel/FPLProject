@@ -3,7 +3,7 @@
 import pandas as pd
 import streamlit as st
 
-from data_processor import get_fixtures_for_gameweek
+from data.data_processor import get_fixtures_for_gameweek
 from utils.date import get_current_gameweek
 
 
