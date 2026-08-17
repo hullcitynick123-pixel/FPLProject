@@ -45,6 +45,20 @@ class APIFootballClient:
         params = {"league": league_id, "season": season}
         return self._request("standings", params)
 
+    def fetch_fixtures_by_round(
+        self,
+        round_number: int,
+        league_id: int = config.DEFAULT_LEAGUE_ID,
+        season: int = config.DEFAULT_SEASON,
+    ) -> dict[str, Any]:
+        """Fetch fixtures for a specific matchweek/round from API-Football."""
+        params = {
+            "league": league_id,
+            "season": season,
+            "round": f"Regular Season - {round_number}",
+        }
+        return self._request("fixtures", params)
+    
     def fetch_player(self, player_name: str, league: int = config.DEFAULT_LEAGUE_ID, season: int = config.DEFAULT_SEASON) -> dict[str, Any]:
         """Fetch player details from API-Football."""
         params = {"search": self.clean_player_search_name(player_name), "league": league, "season": season}
@@ -55,3 +69,4 @@ class APIFootballClient:
         """Clean player search name."""
         cleaned = re.sub(r"[^A-Za-z0-9 ]+", " ", name)
         return " ".join(cleaned.split())
+

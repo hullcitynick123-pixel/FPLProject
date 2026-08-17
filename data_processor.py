@@ -36,7 +36,6 @@ def build_player_stats_rows(stats: dict | None) -> list[tuple[str, str | int]]:
     ]
     return rows
 
-
 @st.cache_data(ttl=300)
 def fetch_draft_squads(sheet_id: str, tab_name: str = "current_squad") -> pd.DataFrame:
     """Fetch and slice the 10-manager squad matrix (Columns A-J, Rows 1-19)."""
@@ -180,6 +179,43 @@ def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
         ]
     )
     return table
+
+@st.cache_data(ttl=300)
+def get_fixtures_for_gameweek(gameweek: int, season: int = config.DEFAULT_SEASON) -> list[dict]:
+    """Fetch and flatten fixtures for a given gameweek/round."""
+    client = APIFootballClient()
+    response = client.fetch_fixtures_by_round(round_number=gameweek, season=season)
+    fixtures = response.get("response", [])
+    if not fixtures:
+        return []
+
+    rows = []
+    for item in fixtures:
+        fixture = item.get("fixture", {})
+        teams = item.get("teams", {})
+        goals = item.get("goals", {})
+        home = teams.get("home", {})
+        away = teams.get("away", {})
+        status = fixture.get("status", {})
+
+        rows.append(
+            {
+                "date": fixture.get("date"),
+                "status_short": status.get("short"),
+                "elapsed": status.get("elapsed"),
+                "home_name": home.get("name", ""),
+                "home_logo": home.get("logo"),
+                "home_winner": home.get("winner"),
+                "away_name": away.get("name", ""),
+                "away_logo": away.get("logo"),
+                "away_winner": away.get("winner"),
+                "home_goals": goals.get("home"),
+                "away_goals": goals.get("away"),
+            }
+        )
+
+    rows.sort(key=lambda row: row.get("date") or "")
+    return rows
 
 @st.cache_data(ttl=300)
 def get_fantasy_league_table(sheet_id: str, tab_name: str = "Scorecard") -> pd.DataFrame:
