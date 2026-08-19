@@ -24,38 +24,37 @@ def render_transfer_feed() -> None:
     # Create transfer text without duplication
     transfer_text = " • ".join(transfers)
 
-    # CSS for marquee scrolling effect
-    marquee_html = f"""
-    <style>
-        @keyframes scroll {{
-            0% {{ transform: translateX(100%); }}
-            100% {{ transform: translateX(-100%); }}
-        }}
-        .transfer-marquee {{
-            background-color: #000000;
-            color: #FF00FF;
-            border: 2px solid #FF00FF;
-            padding: 12px 10px;
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            overflow: hidden;
-            white-space: nowrap;
-            margin-top: 0;
-            margin-bottom: 8px;
-        }}
-        .transfer-scroll {{
-            display: inline-block;
-            animation: scroll 45s linear infinite;
-            padding-right: 50px;
-        }}
-        .transfer-scroll:hover {{
-            animation-play-state: paused;
-        }}
-    </style>
-    <div class="transfer-marquee">
-        <span class="transfer-scroll">{transfer_text}</span>
-    </div>
-    """
+    # CSS for marquee scrolling effect (must not be indented, or Markdown renders it as a code block)
+    marquee_html = f"""<style>
+@keyframes scroll {{
+    0% {{ transform: translateX(100%); }}
+    100% {{ transform: translateX(-100%); }}
+}}
+.transfer-marquee {{
+    background-color: #000000;
+    color: #FF00FF;
+    border: 2px solid #FF00FF;
+    padding: 12px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 0;
+    margin-bottom: 8px;
+}}
+.transfer-scroll {{
+    display: inline-block;
+    animation: scroll 120s linear infinite;
+    padding-right: 50px;
+}}
+.transfer-scroll:hover {{
+    animation-play-state: paused;
+}}
+</style>
+<div class="transfer-marquee">
+    <span class="transfer-scroll">{transfer_text}</span>
+</div>
+"""
 
     st.markdown(marquee_html, unsafe_allow_html=True)
