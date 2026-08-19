@@ -72,7 +72,8 @@ def flavor_transfer(transfer_text: str, manager_name: str, seed_text: str = None
     quote = rng.choice(MANAGER_QUOTES + PLAYER_QUOTES).format(manager=manager_name)
     reaction = rng.choice(CROWD_REACTIONS)
 
-    return f"{tag}! {transfer_text} for {fee_text}. {quote} {reaction}"
+    manager_label = f"{manager_name}: " if manager_name else ""
+    return f"{tag}! {manager_label}{transfer_text} for {fee_text}. {quote} {reaction}"
 
 
 def build_dynamic_feed(transfers: list, gameweek_id: int = 0) -> list:

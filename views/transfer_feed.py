@@ -1,5 +1,7 @@
 """Rolling transfer news marquee shown at the top of the dashboard."""
 
+import html
+
 import streamlit as st
 
 import config
@@ -21,8 +23,10 @@ def render_transfer_feed() -> None:
     if not transfers:
         return
 
-    # Create transfer text without duplication
-    transfer_text = " • ".join(transfers)
+    transfer_text = "".join(
+        f'<span class="transfer-item">{html.escape(transfer)}</span>'
+        for transfer in transfers
+    )
 
     # CSS for marquee scrolling effect (must not be indented, or Markdown renders it as a code block)
     marquee_html = f"""<style>
@@ -32,8 +36,7 @@ def render_transfer_feed() -> None:
 }}
 .transfer-marquee {{
     background-color: #000000;
-    color: #FF00FF;
-    border: 2px solid #FF00FF;
+    color: #FFFFFF;
     padding: 12px 10px;
     font-size: 14px;
     font-weight: bold;
@@ -42,6 +45,11 @@ def render_transfer_feed() -> None:
     white-space: nowrap;
     margin-top: 0;
     margin-bottom: 8px;
+}}
+.transfer-item {{
+    display: inline-block;
+    padding: 0 28px;
+    border-right: 2px solid #FF00FF;
 }}
 .transfer-scroll {{
     display: inline-block;
