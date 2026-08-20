@@ -43,6 +43,25 @@ def render_current_transfer_indicator() -> None:
     )
 
 
+def _colorize_transfer_text(raw_transfer: str) -> str:
+    """Wrap each 'Player - OUT' / 'Player - IN' line in its own colored span."""
+    parts = []
+    for line in raw_transfer.splitlines():
+        escaped_line = html.escape(line.strip())
+        if not escaped_line:
+            continue
+        css_class = "transfer-out" if "OUT" in line.upper() else "transfer-in" if "IN" in line.upper() else "transfer-highlight"
+        parts.append(f'<span class="{css_class}">{escaped_line}</span>')
+    return " ".join(parts)
+
+
+def _highlight_transfer_text(headline: str, raw_transfer: str) -> str:
+    """HTML-escape a headline and colorize the raw transfer segment within it."""
+    escaped_headline = html.escape(headline)
+    escaped_transfer = html.escape(raw_transfer)
+    return escaped_headline.replace(escaped_transfer, _colorize_transfer_text(raw_transfer), 1)
+
+
 def render_transfer_feed() -> None:
     """Render a rolling transfer news feed at the top of the page."""
     try:
@@ -57,14 +76,14 @@ def render_transfer_feed() -> None:
         return
 
     transfer_text = "".join(
-        f'<span class="transfer-item">{html.escape(transfer)}</span>'
-        for transfer in transfers
+        f'<span class="transfer-item">{_highlight_transfer_text(headline, raw_transfer)}</span>'
+        for headline, raw_transfer in transfers
     )
 
     # CSS for marquee scrolling effect (must not be indented, or Markdown renders it as a code block)
     marquee_html = f"""<style>
 @keyframes scroll {{
-    0% {{ transform: translateX(100%); }}
+    0% {{ transform: translateX(100vw); }}
     100% {{ transform: translateX(-100%); }}
 }}
 .transfer-marquee {{
@@ -83,6 +102,15 @@ def render_transfer_feed() -> None:
     display: inline-block;
     padding: 0 28px;
     border-right: 2px solid #FF00FF;
+}}
+.transfer-out {{
+    color: #FF3333;
+}}
+.transfer-in {{
+    color: #00FF00;
+}}
+.transfer-highlight {{
+    color: #00FFFF;
 }}
 .transfer-scroll {{
     display: inline-block;
