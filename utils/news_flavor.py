@@ -10,7 +10,6 @@ HEADLINE_TAGS = [
     "DEADLINE DAY DRAMA",
     "EXCLUSIVE",
     "SHOCK MOVE",
-    "here we go",
     "MEDICAL BOOKED",
 ]
 
@@ -51,6 +50,7 @@ CROWD_REACTIONS = [
     "Bookmakers have already slashed the odds on a title charge.",
     "Fans are already debating if this is a top-6 finish move.",
     "Pundits on the group chat called it 'business as usual'.",
+    "Manager of the month is now looking more likely than ever, according to the group chat.",
 ]
 
 
