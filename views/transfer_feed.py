@@ -37,7 +37,7 @@ def render_current_transfer_indicator() -> None:
     st.markdown(
         f"""<div style='background-color:#FFFF00; color:#000000; padding:6px 10px;
         font-weight:bold; text-align:center; text-transform:uppercase; margin-bottom:4px;'>
-        \u23f0 CURRENT TRANSFER SLOT: {label} ({time_range})
+        CURRENT TRANSFER SLOT: {label} ({time_range})
         </div>""",
         unsafe_allow_html=True,
     )
