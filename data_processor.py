@@ -137,7 +137,7 @@ def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int | 
         transfers = []
         for row_idx, manager_name in manager_rows:
             transfer_data = df.iloc[row_idx, gameweek_col]
-            if pd.notna(transfer_data) and str(transfer_data).strip():
+            if pd.notna(transfer_data) and str(transfer_data).strip() != "-":
                 transfer_str = str(transfer_data).strip()
                 transfers.append(f"{manager_name}: {transfer_str}")
         

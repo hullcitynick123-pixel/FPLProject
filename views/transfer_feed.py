@@ -6,8 +6,41 @@ import streamlit as st
 
 import config
 from data_processor import fetch_transfers
-from utils.date import get_current_gameweek
+from utils.date import get_current_gameweek, get_gameweek_first_kickoff
 from utils.news_flavor import build_dynamic_feed
+from utils.transfer_timetable import get_current_transfer_slot
+
+
+def render_current_transfer_indicator() -> None:
+    """Render a banner showing whose transfer pick slot is currently active."""
+    try:
+        current_gameweek = get_current_gameweek()
+        gameweek_id = current_gameweek.get("id")
+        if not gameweek_id:
+            return
+
+        first_kickoff = get_gameweek_first_kickoff(gameweek_id)
+        slot = get_current_transfer_slot(gameweek_id, first_kickoff)
+    except Exception as e:
+        print(f"Failed to compute current transfer slot: {e}")
+        return
+
+    if not slot:
+        return
+
+    time_range = f"{slot['start'].strftime('%H:%M')}-{slot['end'].strftime('%H:%M')}"
+    if slot["manager"]:
+        label = f"{html.escape(slot['label'].upper())} \u2014 {html.escape(slot['manager'].upper())}"
+    else:
+        label = html.escape(slot["label"].upper())
+
+    st.markdown(
+        f"""<div style='background-color:#FFFF00; color:#000000; padding:6px 10px;
+        font-weight:bold; text-align:center; text-transform:uppercase; margin-bottom:4px;'>
+        \u23f0 CURRENT TRANSFER SLOT: {label} ({time_range})
+        </div>""",
+        unsafe_allow_html=True,
+    )
 
 
 def render_transfer_feed() -> None:
@@ -38,7 +71,7 @@ def render_transfer_feed() -> None:
     background-color: #000000;
     color: #FFFFFF;
     padding: 12px 10px;
-    font-size: 14px;
+    font-size: 20px;
     font-weight: bold;
     text-transform: uppercase;
     overflow: hidden;

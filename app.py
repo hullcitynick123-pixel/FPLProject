@@ -5,7 +5,7 @@ import streamlit as st
 from ceefax_theme.ceefax_header import render_ceefax_header
 from ceefax_theme.ceefax_theme import inject_ceefax_styles
 from views.navigation import render_active_page, render_navigation
-from views.transfer_feed import render_transfer_feed
+from views.transfer_feed import render_current_transfer_indicator, render_transfer_feed
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -23,6 +23,7 @@ def main() -> None:
     if "active_page" not in st.session_state:
         st.session_state.active_page = "home"
 
+    render_current_transfer_indicator()
     render_transfer_feed()
     render_ceefax_header(page_num=302, title="FOOTBALL")
     st.markdown(
