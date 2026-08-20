@@ -119,6 +119,13 @@ def inject_ceefax_styles() -> None:
         div[data-testid="stHorizontalBlock"] > div:nth-child(4) button {
             background-color: #0000CC !important; color: #FFFFFF !important; border: none !important;
         }
+        .st-key-squad div[data-testid="stHorizontalBlock"] > div:nth-child(5) button,
+        .st-key-squad button.st-emotion-cache-asaoob {
+            background-color: #803DF5 !important; color: #FFFFFF !important; border: none !important;
+        }
+        .st-key-squad {
+            margin-bottom: 32px !important;
+        }
 
         .stButton > button {
             width: 100%;
