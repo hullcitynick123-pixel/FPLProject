@@ -43,7 +43,6 @@ def build_ceefax_table_html(
         }}
         .ceefax-table tr:hover td {{
             background: #001c00;
-            color: #FFFFFF !important;
         }}
         {extra_css}
         @media (max-width: 768px) {{
