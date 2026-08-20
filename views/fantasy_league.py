@@ -29,7 +29,7 @@ def _gw_score_color(val: object) -> str | None:
     if score >= 70:
         return "#00CC00"
     if score >= 56:
-        return "#CCCCCC"
+        return "#2E7420"
     if score >= 44:
         return "#FFFF00"
     if score >= 30:
