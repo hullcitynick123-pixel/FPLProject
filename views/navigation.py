@@ -40,14 +40,14 @@ def render_navigation() -> None:
     with st.container(key="navbuttons"):
         btn_col1, btn_col2, btn_col3, btn_col4 = st.columns(4)
 
-        if btn_col1.button("303 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
-            st.session_state.active_page = "league"
-        if btn_col2.button("304 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
-            st.session_state.active_page = "fixtures"
-        if btn_col4.button("305 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
+        if btn_col1.button("303 FANTASY SQUADS", use_container_width=True, key="squads_tab"):
             st.session_state.active_page = "squads"
-        if btn_col3.button("306 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
+        if btn_col2.button("304 FANTASY LEAGUE TABLE", use_container_width=True, key="fantasy_league_tab"):
             st.session_state.active_page = "fantasy_league"
+        if btn_col3.button("305 LIVE PREMIER LEAGUE TABLE", use_container_width=True, key="league_tab"):
+            st.session_state.active_page = "league"
+        if btn_col4.button("306 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
+            st.session_state.active_page = "fixtures"
 
 def render_active_page() -> None:
     """Render the page selected in session state."""

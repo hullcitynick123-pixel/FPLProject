@@ -21,7 +21,7 @@ inject_ceefax_styles()
 def main() -> None:
     """Render the dashboard shell and the currently selected page."""
     if "active_page" not in st.session_state:
-        st.session_state.active_page = "home"
+        st.session_state.active_page = "fantasy_league"
 
     render_current_transfer_indicator()
     render_transfer_feed()
