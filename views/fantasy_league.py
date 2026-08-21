@@ -77,6 +77,18 @@ def render_fantasy_league_table() -> None:
             padding: 6px 10px;
             white-space: nowrap;
         }
+        .fantasy-league-table th:first-child,
+        .fantasy-league-table td:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background: #000000;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.6);
+        }
+        .fantasy-league-table th:first-child {
+            z-index: 3;
+            background: #0000FF;
+        }
         @media (max-width: 768px) {
             .fantasy-league-table {
                 font-size: 16px;
