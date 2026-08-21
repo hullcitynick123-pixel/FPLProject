@@ -46,7 +46,8 @@ def render_fixtures_page() -> None:
     rows_html = []
     for fixture in fixtures:
         try:
-            kickoff = pd.to_datetime(fixture["date"]).tz_convert("Europe/London").strftime("%a %d %b, %H:%M")
+            kickoff_dt = pd.to_datetime(fixture["date"]).tz_convert("Europe/London")
+            kickoff = f"{kickoff_dt.strftime('%a %d %b')}<br>{kickoff_dt.strftime('%H:%M')}"
         except Exception:
             kickoff = ""
 
@@ -72,18 +73,22 @@ def render_fixtures_page() -> None:
         f"""
         <style>
         .fx-table {{ width:100%; table-layout:fixed; border-collapse:collapse; }}
-        .fx-table td {{ padding:10px 12px; vertical-align:middle; border-bottom:1px solid #073807; }}
-        .fx-home {{ width:42%; text-align:right; }}
-        .fx-away {{ width:42%; text-align:left; }}
-        .fx-score {{ width:16%; text-align:center; color:#00FFFF; font-weight:bold; white-space:nowrap; }}
+        .fx-table td {{ padding:10px 12px; vertical-align:middle; border-bottom:1px solid #073807; overflow:hidden; }}
+        .fx-home {{ width:40%; text-align:right; }}
+        .fx-away {{ width:40%; text-align:left; }}
+        .fx-score {{ width:20%; text-align:center; color:#00FFFF; font-weight:bold; white-space:nowrap; line-height:1.3; }}
         .fx-team-name {{
             display:inline-block; vertical-align:middle; color:#FFFFFF;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;
         }}
         .fx-crest {{ width:28px; height:28px; vertical-align:middle; margin:0 8px; }}
         @media (max-width: 768px) {{
-            .fx-table td {{ padding:8px 6px; font-size:13px; }}
-            .fx-crest {{ width:20px; height:20px; margin:0 4px; }}
+            .fx-table td {{ padding:8px 4px; font-size:12px; }}
+            .fx-home {{ width:38%; }}
+            .fx-away {{ width:38%; }}
+            .fx-score {{ width:24%; font-size:11px; }}
+            .fx-crest {{ width:18px; height:18px; margin:0 3px; }}
+            .fx-team-name {{ max-width:70%; }}
         }}
         </style>
         <table class='fx-table'><tbody>{''.join(rows_html)}</tbody></table>
