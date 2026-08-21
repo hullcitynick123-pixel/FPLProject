@@ -10,7 +10,7 @@ from data_processor import get_fantasy_league_table
 
 def _format_cell(val: object) -> str:
     """Format a table cell, dropping trailing .0 from whole-number floats."""
-    if pd.isna(val):
+    if pd.isna(val): # type: ignore
         return ""
     if isinstance(val, float) and val.is_integer():
         return str(int(val))
@@ -19,10 +19,10 @@ def _format_cell(val: object) -> str:
 
 def _gw_score_color(val: object) -> str | None:
     """Return the background color for a gameweek score cell based on its value."""
-    if pd.isna(val):
+    if pd.isna(val): # type: ignore
         return None
     try:
-        score = float(val)
+        score = float(val) # type: ignore
     except (TypeError, ValueError):
         return None
 
@@ -81,10 +81,6 @@ def render_fantasy_league_table() -> None:
             .fantasy-league-table {
                 font-size: 16px;
                 min-width: 760px;
-            }
-            .fantasy-league-table th, .fantasy-league-table td {
-                white-space: normal;
-                overflow-wrap: anywhere;
             }
         }
         """,
