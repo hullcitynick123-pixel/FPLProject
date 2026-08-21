@@ -18,6 +18,30 @@ def render_fixtures_page() -> None:
     min_gw, max_gw = 1, 38
     gameweek = st.session_state.fixtures_gameweek
 
+    st.markdown(
+        """
+        <style>
+        @media (max-width: 768px) {
+            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) {
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+            }
+            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) div[data-testid="stColumn"] {
+                width: unset !important;
+                flex: 1 1 0 !important;
+                min-width: 0 !important;
+            }
+            div[data-testid="stHorizontalBlock"]:has(button[kind="secondary"]) button {
+                font-size: 12px !important;
+                padding: 0.25rem 0.4rem !important;
+                white-space: nowrap !important;
+            }
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     nav_prev, nav_label, nav_next = st.columns([1, 2, 1])
     with nav_prev:
         if st.button("◀ PREV GW", use_container_width=True, disabled=gameweek <= min_gw, key="fixtures_prev_gw"):
