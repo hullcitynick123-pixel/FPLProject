@@ -67,7 +67,7 @@ def render_fixtures_page() -> None:
         st.warning("No fixtures found for this gameweek.")
         return
 
-    rows_html = []
+    fixture_rows = []
     for fixture in fixtures:
         try:
             kickoff_dt = pd.to_datetime(fixture["date"]).tz_convert("Europe/London")
@@ -83,7 +83,7 @@ def render_fixtures_page() -> None:
         else:
             score_display = kickoff
 
-        rows_html.append(
+        fixture_rows.append(
             "<tr>"
             f"<td class='fx-home'><span class='fx-team-name'>{fixture['home_name']}</span>"
             f"<img src='{fixture['home_logo']}' class='fx-crest' /></td>"
@@ -94,28 +94,60 @@ def render_fixtures_page() -> None:
         )
 
     st.markdown(
-        f"""
+        """
         <style>
-        .fx-table {{ width:100%; table-layout:fixed; border-collapse:collapse; }}
-        .fx-table td {{ padding:10px 12px; vertical-align:middle; border-bottom:1px solid #073807; overflow:hidden; }}
-        .fx-home {{ width:40%; text-align:right; }}
-        .fx-away {{ width:40%; text-align:left; }}
-        .fx-score {{ width:20%; text-align:center; color:#00FFFF; font-weight:bold; white-space:nowrap; line-height:1.3; }}
-        .fx-team-name {{
+        .fx-table { width:100%; table-layout:fixed; border-collapse:collapse; }
+        .fx-table td { padding:10px 12px; vertical-align:middle; border-bottom:1px solid #073807; overflow:hidden; }
+        .fx-home { width:40%; text-align:right; }
+        .fx-away { width:40%; text-align:left; }
+        .fx-score { width:20%; text-align:center; color:#00FFFF; font-weight:bold; white-space:nowrap; line-height:1.3; }
+        .fx-team-name {
             display:inline-block; vertical-align:middle; color:#FFFFFF;
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;
-        }}
-        .fx-crest {{ width:28px; height:28px; vertical-align:middle; margin:0 8px; }}
-        @media (max-width: 768px) {{
-            .fx-table td {{ padding:8px 4px; font-size:12px; }}
-            .fx-home {{ width:38%; }}
-            .fx-away {{ width:38%; }}
-            .fx-score {{ width:24%; font-size:11px; }}
-            .fx-crest {{ width:18px; height:18px; margin:0 3px; }}
-            .fx-team-name {{ max-width:70%; }}
-        }}
+        }
+        .fx-crest { width:28px; height:28px; vertical-align:middle; margin:0 8px; }
+        @media (max-width: 768px) {
+            .fx-table td { padding:8px 4px; font-size:12px; }
+            .fx-home { width:38%; }
+            .fx-away { width:38%; }
+            .fx-score { width:24%; font-size:11px; }
+            .fx-crest { width:18px; height:18px; margin:0 3px; }
+            .fx-team-name { max-width:70%; }
+        }
         </style>
-        <table class='fx-table'><tbody>{''.join(rows_html)}</tbody></table>
-        """,
+        """
+        ,
         unsafe_allow_html=True,
     )
+
+    for fixture, fixture_row in zip(fixtures, fixture_rows):
+        st.markdown(
+            f"<table class='fx-table'><tbody>{fixture_row}</tbody></table>",
+            unsafe_allow_html=True,
+        )
+        fixture_key = fixture.get("fixture_id") or f"{fixture['home_name']}_{fixture['away_name']}"
+        scorer_state_key = f"show_scorers_{fixture_key}"
+        is_visible = st.session_state.get(scorer_state_key, False)
+        button_label = "HIDE SCORERS" if is_visible else "SHOW SCORERS"
+        if st.button(button_label, key=f"scorers_button_{fixture_key}", use_container_width=True):
+            st.session_state[scorer_state_key] = not is_visible
+            st.rerun()
+
+        if is_visible:
+            scorers = fixture.get("scorers", [])
+            if scorers:
+                scorer_lines = []
+                for scorer in scorers:
+                    minute = scorer.get("elapsed")
+                    extra = scorer.get("extra")
+                    minute_text = ""
+                    if minute is not None:
+                        minute_text = f" ({minute}+{extra}' if extra else f' ({minute}')"
+                    scorer_lines.append(
+                        f"<div class='fx-scorer'>{scorer['name']}{minute_text}"
+                        f" <span class='fx-scorer-team'>{scorer['team']}</span></div>"
+                    )
+                    print(scorer_lines)
+                st.markdown("<div class='fx-scorers'>" + "".join(scorer_lines) + "</div>", unsafe_allow_html=True)
+            else:
+                st.caption("No scorers recorded.")

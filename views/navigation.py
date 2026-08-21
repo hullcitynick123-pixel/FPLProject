@@ -49,6 +49,10 @@ def render_navigation() -> None:
         if btn_col4.button("306 FIXTURES & RESULTS", use_container_width=True, key="fixtures_tab"):
             st.session_state.active_page = "fixtures"
 
+    if st.button("REFRESH ALL DATA", use_container_width=True, key="refresh_all_data"):
+        st.cache_data.clear()
+        st.rerun()
+
 def render_active_page() -> None:
     """Render the page selected in session state."""
     page_renderers = {

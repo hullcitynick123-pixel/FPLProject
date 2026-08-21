@@ -146,7 +146,7 @@ def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int | 
         print(f"❌ Failed to fetch transfers: {exc}")
         return []
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_data(ttl=60, show_spinner=False)
 def get_league_table(season: int = config.DEFAULT_SEASON) -> pd.DataFrame:
     """Fetch and flatten the current Premier League standings."""
     client = APIFootballClient()
@@ -200,6 +200,7 @@ def get_fixtures_for_gameweek(gameweek: int, season: int = config.DEFAULT_SEASON
 
         rows.append(
             {
+                "fixture_id": fixture.get("id"),
                 "date": fixture.get("date"),
                 "status_short": status.get("short"),
                 "elapsed": status.get("elapsed"),
@@ -211,6 +212,17 @@ def get_fixtures_for_gameweek(gameweek: int, season: int = config.DEFAULT_SEASON
                 "away_winner": away.get("winner"),
                 "home_goals": goals.get("home"),
                 "away_goals": goals.get("away"),
+                "scorers": [
+                    {
+                        "name": (event.get("player") or {}).get("name", ""),
+                        "team": (event.get("team") or {}).get("name", ""),
+                        "elapsed": (event.get("time") or {}).get("elapsed"),
+                        "extra": (event.get("time") or {}).get("extra"),
+                    }
+                    for event in item.get("events", [])
+                    if event.get("type") == "Goal"
+                    and (event.get("player") or {}).get("name")
+                ],
             }
         )
 
