@@ -197,10 +197,14 @@ def get_fixtures_for_gameweek(gameweek: int, season: int = config.DEFAULT_SEASON
         home = teams.get("home", {})
         away = teams.get("away", {})
         status = fixture.get("status", {})
+        fixture_id = fixture.get("id")
+        events = []
+        if fixture_id and status.get("short") in ("FT", "AET", "PEN", "1H", "2H", "ET", "P", "LIVE"):
+            events = client.fetch_fixture_events(fixture_id).get("response", [])
 
         rows.append(
             {
-                "fixture_id": fixture.get("id"),
+                "fixture_id": fixture_id,
                 "date": fixture.get("date"),
                 "status_short": status.get("short"),
                 "elapsed": status.get("elapsed"),
@@ -219,7 +223,7 @@ def get_fixtures_for_gameweek(gameweek: int, season: int = config.DEFAULT_SEASON
                         "elapsed": (event.get("time") or {}).get("elapsed"),
                         "extra": (event.get("time") or {}).get("extra"),
                     }
-                    for event in item.get("events", [])
+                    for event in events
                     if event.get("type") == "Goal"
                     and (event.get("player") or {}).get("name")
                 ],

@@ -58,6 +58,10 @@ class APIFootballClient:
             "round": f"Regular Season - {round_number}",
         }
         return self._request("fixtures", params)
+
+    def fetch_fixture_events(self, fixture_id: int) -> dict[str, Any]:
+        """Fetch match events, including goals and scorers, for a fixture."""
+        return self._request("fixtures/events", {"fixture": fixture_id})
     
     def fetch_player(self, player_name: str, league: int = config.DEFAULT_LEAGUE_ID, season: int = config.DEFAULT_SEASON) -> dict[str, Any]:
         """Fetch player details from API-Football."""

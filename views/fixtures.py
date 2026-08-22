@@ -106,6 +106,15 @@ def render_fixtures_page() -> None:
             white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:80%;
         }
         .fx-crest { width:28px; height:28px; vertical-align:middle; margin:0 8px; }
+        .fx-scorers {
+            margin:0 0 10px;
+            padding:6px 12px;
+            border-left:2px solid #FFFF00;
+            color:#FFFFFF;
+            font-size:14px;
+        }
+        .fx-scorer { padding:2px 0; }
+        .fx-scorer-team { color:#00FFFF; }
         @media (max-width: 768px) {
             .fx-table td { padding:8px 4px; font-size:12px; }
             .fx-home { width:38%; }
@@ -142,12 +151,11 @@ def render_fixtures_page() -> None:
                     extra = scorer.get("extra")
                     minute_text = ""
                     if minute is not None:
-                        minute_text = f" ({minute}+{extra}' if extra else f' ({minute}')"
+                        minute_text = f" ({minute}+{extra}')" if extra else f" ({minute}')"
                     scorer_lines.append(
                         f"<div class='fx-scorer'>{scorer['name']}{minute_text}"
                         f" <span class='fx-scorer-team'>{scorer['team']}</span></div>"
                     )
-                    print(scorer_lines)
                 st.markdown("<div class='fx-scorers'>" + "".join(scorer_lines) + "</div>", unsafe_allow_html=True)
             else:
                 st.caption("No scorers recorded.")
