@@ -5,7 +5,7 @@ import streamlit as st
 
 import config
 from ceefax_theme.ceefax_table import render_ceefax_table
-from data_processor import get_fantasy_league_table
+from data_processor import get_fantasy_league_table, get_gameweek_stats
 
 
 def _format_cell(val: object) -> str:
@@ -35,6 +35,33 @@ def _gw_score_color(val: object) -> str | None:
     if score >= 30:
         return "#FF8C00"
     return "#FF0000"
+
+
+def _render_gameweek_stats() -> None:
+    """Render a strip of headline stats for the current/most recent gameweek."""
+    stats = get_gameweek_stats()
+    if not stats:
+        return
+
+    gw_label = f"GW{stats['gameweek']}" + ("" if stats["is_current"] else " (FINAL)")
+    st.markdown(
+        f"<h3 style='color:#00FFFF; margin-top:30px; text-align:center;'>{gw_label} HEADLINES</h3>",
+        unsafe_allow_html=True,
+    )
+
+    cards = [
+        ("TOP SCORER", f"{stats['top_scorer_name'] or 'N/A'}", f"{stats['top_scorer_points']} PTS"),
+        ("MOST CAPTAINED", stats["most_captained_name"] or "N/A", ""),
+        ("MOST TRANSFERRED IN", stats["most_transferred_in_name"] or "N/A", f"+{stats['most_transferred_in_count']:,}"),
+        ("MOST SELECTED", stats["most_selected_name"] or "N/A", ""),
+        ("AVERAGE SCORE", f"{stats['average_score']}" if stats["average_score"] is not None else "N/A", ""),
+        ("HIGHEST SCORE", f"{stats['highest_score']}" if stats["highest_score"] is not None else "N/A", ""),
+    ]
+
+    cols = st.columns(len(cards))
+    for col, (label, value, sub) in zip(cols, cards):
+        with col:
+            st.metric(label, value, sub if sub else None)
 
 
 def render_fantasy_league_table() -> None:
@@ -98,3 +125,5 @@ def render_fantasy_league_table() -> None:
         """,
         table_class="fantasy-league-table",
     )
+
+    _render_gameweek_stats()

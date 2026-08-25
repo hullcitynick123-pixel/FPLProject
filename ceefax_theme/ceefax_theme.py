@@ -92,13 +92,15 @@ def inject_ceefax_styles() -> None:
         /* Custom Teletext Data Cards */
         div[data-testid="stMetric"] {
             background-color: #000000 !important;
-            border: 2px solid #00FFFF !important;
+            border: 2px solid black !important;
             padding: 10px !important;
         }
 
         div[data-testid="stMetricLabel"] {
             color: #FFFF00 !important;
             font-size: 20px !important;
+            align-items: center !important;
+            text-align: center !important;
         }
 
         div[data-testid="stMetricValue"] {
@@ -226,6 +228,9 @@ def inject_ceefax_styles() -> None:
             div[data-testid="stHorizontalBlock"] {
                 gap: 8px !important;
                 flex-direction: column !important;
+                justify-content: center !important;
+                align-items: center !important;
+                text-align: center !important;
             }
 
             div[data-testid="stHorizontalBlock"] > div {

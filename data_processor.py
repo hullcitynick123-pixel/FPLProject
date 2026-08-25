@@ -1,12 +1,16 @@
 """Data processing and feature engineering module for FPL analytics."""
 
+import io
 import urllib.parse
 
 import pandas as pd
+import requests
 import streamlit as st
 
 import config
 from api_client import APIFootballClient
+
+SHEET_FETCH_TIMEOUT = 10
 
 
 def build_player_stats_rows(stats: dict | None) -> list[tuple[str, str | int]]:
@@ -43,7 +47,9 @@ def fetch_draft_squads(sheet_id: str, tab_name: str = "current_squad") -> pd.Dat
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={encoded_tab}"
 
     try:
-        df = pd.read_csv(url)
+        response = requests.get(url, timeout=SHEET_FETCH_TIMEOUT)
+        response.raise_for_status()
+        df = pd.read_csv(io.StringIO(response.text))
 
         # 1. Slice first 10 columns (A to J: Seargent -> Browes)
         # 2. Slice first 18 data rows (Sheet rows 2 to 19)
@@ -96,7 +102,9 @@ def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int | 
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={encoded_tab}"
 
     try:
-        df = pd.read_csv(url)
+        response = requests.get(url, timeout=SHEET_FETCH_TIMEOUT)
+        response.raise_for_status()
+        df = pd.read_csv(io.StringIO(response.text))
         if df.empty:
             return []
         
@@ -142,6 +150,9 @@ def fetch_transfers(sheet_id: str, tab_name: str = "Transfers", gameweek: int | 
                 transfers.append(f"{manager_name}: {transfer_str}")
         
         return transfers
+    except requests.exceptions.RequestException as exc:
+        print(f"❌ Failed to fetch transfers (network error): {exc}")
+        return []
     except Exception as exc:
         print(f"❌ Failed to fetch transfers: {exc}")
         return []
@@ -232,6 +243,54 @@ def get_fixtures_for_gameweek(gameweek: int, season: int = config.DEFAULT_SEASON
 
     rows.sort(key=lambda row: row.get("date") or "")
     return rows
+
+FPL_BOOTSTRAP_URL = "https://fantasy.premierleague.com/api/bootstrap-static/"
+
+
+@st.cache_data(ttl=300)
+def get_gameweek_stats() -> dict:
+    """Fetch headline player/manager stats for the current (or most recently finished) FPL gameweek."""
+    try:
+        response = requests.get(FPL_BOOTSTRAP_URL, timeout=SHEET_FETCH_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+    except requests.RequestException as exc:
+        print(f"❌ Failed to fetch gameweek stats: {exc}")
+        return {}
+
+    events = data.get("events", [])
+    elements = {el["id"]: el for el in data.get("elements", [])}
+
+    event = next((e for e in events if e.get("is_current")), None)
+    if event is None:
+        finished = [e for e in events if e.get("finished")]
+        event = finished[-1] if finished else None
+    if event is None:
+        return {}
+
+    def player_name(player_id: int | None) -> str | None:
+        el = elements.get(player_id) if player_id is not None else None
+        return el.get("web_name") if el else None
+
+    top_info = event.get("top_element_info") or {}
+    top_id = top_info.get("id") or event.get("top_element")
+    transferred_in_id = event.get("most_transferred_in")
+    transferred_in_el = elements.get(transferred_in_id) if transferred_in_id is not None else None
+
+    return {
+        "gameweek": event.get("id"),
+        "is_current": bool(event.get("is_current")),
+        "top_scorer_name": player_name(top_id),
+        "top_scorer_points": top_info.get("points", 0),
+        "most_captained_name": player_name(event.get("most_captained")),
+        "most_vice_captained_name": player_name(event.get("most_vice_captained")),
+        "most_selected_name": player_name(event.get("most_selected")),
+        "most_transferred_in_name": player_name(transferred_in_id),
+        "most_transferred_in_count": transferred_in_el.get("transfers_in_event", 0) if transferred_in_el else 0,
+        "average_score": event.get("average_entry_score"),
+        "highest_score": event.get("highest_score"),
+    }
+
 
 @st.cache_data(ttl=300)
 def get_fantasy_league_table(sheet_id: str, tab_name: str = "Scorecard") -> pd.DataFrame:
