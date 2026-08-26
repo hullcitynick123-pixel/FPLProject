@@ -15,7 +15,7 @@ def render_current_transfer_indicator() -> None:
     """Render a banner showing whose transfer pick slot is currently active."""
     try:
         current_gameweek = get_current_gameweek()
-        gameweek_id = current_gameweek.get("id")
+        gameweek_id = current_gameweek.get("id")+1
         if not gameweek_id:
             return
 
