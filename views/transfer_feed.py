@@ -66,8 +66,8 @@ def render_transfer_feed() -> None:
     """Render a rolling transfer news feed at the top of the page."""
     try:
         current_gameweek = get_current_gameweek()
-        transfers = fetch_transfers(sheet_id=config.SHEET_ID, tab_name=config.TRANSFERS_SHEET_NAME, gameweek=current_gameweek["id"])
-        transfers = build_dynamic_feed(transfers, gameweek_id=current_gameweek.get("id", 0))
+        transfers = fetch_transfers(sheet_id=config.SHEET_ID, tab_name=config.TRANSFERS_SHEET_NAME, gameweek=current_gameweek["id"]+1)
+        transfers = build_dynamic_feed(transfers, gameweek_id=current_gameweek.get("id", 0)+1)
     except Exception as e:
         print(f"Failed to fetch transfers: {e}")
         transfers = []
