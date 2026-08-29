@@ -74,3 +74,6 @@ class APIFootballClient:
         cleaned = re.sub(r"[^A-Za-z0-9 ]+", " ", name)
         return " ".join(cleaned.split())
 
+    def fetch_fixture_prediction(self, fixture_id: int) -> dict[str, Any]:
+        """Fetch match prediction for a fixture."""
+        return self._request("predictions", {"fixture": fixture_id})

@@ -10,7 +10,7 @@ from data_processor import build_player_stats_rows
 
 def render_player_modal(player_name: str) -> None:
     """Display a modal with player stats and a season selector."""
-    seasons = [2022, 2023, 2024, 2025]
+    seasons = [2022, 2023, 2024, 2025, 2026]
     if "player_modal_year" not in st.session_state:
         st.session_state.player_modal_year = config.DEFAULT_SEASON
 
