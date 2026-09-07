@@ -1,0 +1,28 @@
+name: Keep-Alive Daily Empty Commit
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day
+    - cron: '0 0 * * *'
+  # Allows manual triggering from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  keep_alive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grants permission to push commits back to the repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push empty commit
+        run: |
+          git commit --allow-empty -m "Chore: Daily keep-alive empty commit [skip ci]"
+          git push
